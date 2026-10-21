@@ -29,7 +29,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-r from-primary via-secondary to-primary-dark text-white mt-20">
+    <footer className="mt-20 bg-secondary text-white">
 
       <PageContainer>
 

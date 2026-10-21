@@ -78,6 +78,26 @@ async function initializeDatabase(pool) {
   if (!userIdHasUniqueIndex) {
     await pool.query("ALTER TABLE users ADD UNIQUE KEY users_user_id_unique (user_id)");
   }
+
+  // ── Banners table ─────────────────────────────────────────────
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS banners (
+      id           INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      title        VARCHAR(255) NOT NULL,
+      subtitle     VARCHAR(255) DEFAULT NULL,
+      description  TEXT DEFAULT NULL,
+      image        VARCHAR(500) DEFAULT NULL,
+      mobile_image VARCHAR(500) DEFAULT NULL,
+      link         VARCHAR(500) DEFAULT NULL,
+      type         VARCHAR(64) NOT NULL DEFAULT 'hero',
+      status       ENUM('active','inactive') NOT NULL DEFAULT 'active',
+      sort_order   INT NOT NULL DEFAULT 0,
+      created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX banners_type_idx (type),
+      INDEX banners_status_idx (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
 }
 
 module.exports = { createPool, initializeDatabase };

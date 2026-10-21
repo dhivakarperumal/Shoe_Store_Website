@@ -11,7 +11,7 @@ import PageContainer from "./PageContainer";
 
 const Header = () => {
   return (
-    <div className="bg-gradient-to-r from-primary via-secondary to-primary-dark   hidden md:block text-white text-sm">
+    <div className="hidden bg-secondary text-sm text-white md:block">
 
       <PageContainer>
 

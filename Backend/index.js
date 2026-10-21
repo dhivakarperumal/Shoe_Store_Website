@@ -2,10 +2,12 @@ require("dotenv").config();
 
 const cors = require("cors");
 const express = require("express");
+const path = require("path");
 const { createPool, initializeDatabase } = require("./modules/db");
 const { createAuthService } = require("./modules/authService");
 const { createAuthController } = require("./controllers/authController");
 const createAuthRouter = require("./routers/authRouter");
+const createBannerRouter = require("./routers/bannerRouter");
 
 const port = Number(process.env.PORT || 5000);
 
@@ -20,6 +22,7 @@ const authController = createAuthController(authService);
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/api/health", async (request, response) => {
   try {
     await pool.query("SELECT 1");
@@ -30,6 +33,7 @@ app.get("/api/health", async (request, response) => {
   }
 });
 app.use("/api/auth", createAuthRouter(authController));
+app.use("/api/banners", createBannerRouter(pool));
 
 app.use((error, request, response, next) => {
   console.error("Backend request failed:", error);

@@ -20,6 +20,7 @@ const Register = React.lazy(() => import("./Components/Auth/Register.jsx"));
 // Lazy Load Admin Components
 const AdminPanel = React.lazy(() => import("./Admin/AdminPanel.jsx"));
 const Dashboard = React.lazy(() => import("./Admin/Dashboard.jsx"));
+const Banners = React.lazy(() => import("./Admin/Banners/Banners.jsx"));
 
 const ErrorPage = React.lazy(() => import("./Admin/Pages/ErrorPage.jsx"));
 
@@ -30,7 +31,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "/", element: <Home /> },
-      
+
 
     ],
   },
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Dashboard /> },
+      { path: "banners", element: <Banners /> },
      
     ],
   },

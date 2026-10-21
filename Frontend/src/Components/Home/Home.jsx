@@ -1,10 +1,12 @@
 import React from 'react'
-
+import Hero from './Hero/Hero'
+import StoreBenefits from './StoreBenefits'
 
 const Home = () => {
   return (
     <div>
-     <h1>hello </h1>
+      <Hero />
+      <StoreBenefits />
     </div>
   )
 }

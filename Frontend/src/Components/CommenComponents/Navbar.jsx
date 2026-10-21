@@ -110,16 +110,16 @@ const Navbar = () => {
   }, [user]);
 
 const navClass = ({ isActive }) =>
-  `px-4 py-1.5 rounded-lg text-sm font-medium transition
+  `relative flex h-full items-center px-5 text-[17px] font-medium transition-colors duration-200 after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:w-1/2 after:-translate-x-1/2 after:content-['']
   ${
     isActive
-      ? "bg-gradient-to-r from-primary-light to-secondary text-white shadow"
-      : "text-gray-600 hover:bg-primary-light/10 hover:text-primary"
+      ? "text-primary after:bg-primary"
+      : "text-slate-600 after:bg-transparent hover:text-primary hover:after:bg-primary-light"
   }`;
 
   return (
 
-    <nav className="sticky top-0 z-50 bg-white shadow-md py-1 md:py-0">
+    <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white shadow-sm py-1 md:py-0">
 
       <PageContainer>
 
@@ -142,7 +142,7 @@ const navClass = ({ isActive }) =>
 
           <div className="hidden md:flex flex-1 justify-center">
 
-            <div className="flex items-center gap-2 text-base">
+            <div className="flex h-16 items-stretch gap-1 text-base">
 
               <NavLink to="/" className={navClass}>
                 Home
@@ -161,7 +161,11 @@ const navClass = ({ isActive }) =>
                     setCategoryMenu(!categoryMenu);
                     setPagesMenu(false);
                   }}
-                  className="flex cursor-pointer items-center gap-1 text-gray-600 hover:text-primary transition"
+                  className={`relative flex h-full cursor-pointer items-center gap-1 px-4 text-[17px] font-medium transition-colors duration-200 after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:w-1/2 after:-translate-x-1/2 after:content-[''] ${
+                    categoryMenu
+                      ? "text-primary after:bg-primary"
+                      : "text-slate-600 after:bg-transparent hover:text-primary hover:after:bg-primary-light"
+                  }`}
                 >
                   Categories
                   <FiChevronDown
@@ -207,7 +211,11 @@ const navClass = ({ isActive }) =>
                     setPagesMenu(!pagesMenu);
                     setCategoryMenu(false);
                   }}
-                  className="flex items-center cursor-pointer gap-1 text-gray-600 hover:text-primary transition"
+                  className={`relative flex h-full cursor-pointer items-center gap-1 px-4 text-[17px] font-medium transition-colors duration-200 after:absolute after:bottom-0 after:left-1/2 after:h-0.5 after:w-1/2 after:-translate-x-1/2 after:content-[''] ${
+                    pagesMenu
+                      ? "text-primary after:bg-primary"
+                      : "text-slate-600 after:bg-transparent hover:text-primary hover:after:bg-primary-light"
+                  }`}
                 >
                   Pages
                   <FiChevronDown
