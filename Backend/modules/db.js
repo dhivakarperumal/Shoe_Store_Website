@@ -98,6 +98,24 @@ async function initializeDatabase(pool) {
       INDEX banners_status_idx (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      cat_id VARCHAR(64) NOT NULL,
+      name VARCHAR(120) NOT NULL,
+      description TEXT DEFAULT NULL,
+      subcategory JSON NOT NULL,
+      images JSON NOT NULL,
+      user_id VARCHAR(255) DEFAULT NULL,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY categories_cat_id_unique (cat_id),
+      INDEX categories_name_idx (name),
+      INDEX categories_status_idx (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
 }
 
 module.exports = { createPool, initializeDatabase };

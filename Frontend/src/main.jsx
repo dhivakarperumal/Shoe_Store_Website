@@ -13,6 +13,7 @@ import Loader from "./Components/CommenComponents/Loader.jsx";
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import("./Components/Home/Home.jsx"));
+const AboutUs = React.lazy(() => import("./Components/About/AboutUs.jsx"));
 
 const Login = React.lazy(() => import("./Components/Auth/Login.jsx"));
 const Register = React.lazy(() => import("./Components/Auth/Register.jsx"));
@@ -21,6 +22,7 @@ const Register = React.lazy(() => import("./Components/Auth/Register.jsx"));
 const AdminPanel = React.lazy(() => import("./Admin/AdminPanel.jsx"));
 const Dashboard = React.lazy(() => import("./Admin/Dashboard.jsx"));
 const Banners = React.lazy(() => import("./Admin/Banners/Banners.jsx"));
+const Category = React.lazy(() => import("./Admin/Categories/Category.jsx"));
 
 const ErrorPage = React.lazy(() => import("./Admin/Pages/ErrorPage.jsx"));
 
@@ -31,7 +33,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "/", element: <Home /> },
-
+      { path: "about", element: <AboutUs /> },
 
     ],
   },
@@ -50,6 +52,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "banners", element: <Banners /> },
+      { path: "products/category", element: <Category /> },
      
     ],
   },

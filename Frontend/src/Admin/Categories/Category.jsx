@@ -16,9 +16,6 @@ import {
     FiCheckCircle,
     FiAlertCircle,
     FiBox,
-    FiLayers,
-    FiFilter,
-    FiDownload,
     FiChevronDown
 } from "react-icons/fi";
 import imageCompression from "browser-image-compression";
@@ -30,29 +27,33 @@ const Category = () => {
     // ---- Global State ----
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
-            setLoading(true);
             const response = await api.get("/categories");
+            if (!Array.isArray(response.data)) {
+                throw new Error("The categories API returned an invalid response.");
+            }
             setCategories(response.data);
         } catch (error) {
             console.error("Failed to fetch categories:", error);
+            setLoadError(error.response?.data?.message || "Unable to load categories. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
 
     // ---- View & Pagination State ----
     const [viewMode, setViewMode] = useState("table"); 
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const itemsPerPage = 10;
 
     // ---- Modal State ----
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,8 +72,10 @@ const Category = () => {
     // ---- Derived Data (Search & Pagination) ----
     const filteredCategories = useMemo(() => {
         return categories.filter(cat => {
-            const matchesSearch = cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                  cat.catId.toLowerCase().includes(searchQuery.toLowerCase());
+            const name = typeof cat.name === "string" ? cat.name : "";
+            const catId = typeof cat.catId === "string" ? cat.catId : "";
+            const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  catId.toLowerCase().includes(searchQuery.toLowerCase());
             const catStatus = cat.status || 'Active';
             const matchesStatus = statusFilter === 'All' || catStatus === statusFilter;
             return matchesSearch && matchesStatus;
@@ -145,7 +148,10 @@ const Category = () => {
     };
 
     const handleSaveCategory = async () => {
-        if (!formData.catId || !formData.name) return;
+        if (!formData.catId || !formData.name.trim()) {
+            toast.error("Category ID and name are required.");
+            return;
+        }
 
         const newCatData = {
             ...formData,
@@ -155,13 +161,13 @@ const Category = () => {
 
         try {
             if (isEditing) {
-                await api.put(`/categories/${formData.catId}`, newCatData);
-                setCategories(categories.map(cat =>
-                    cat.catId === formData.catId ? { ...newCatData, id: cat.id } : cat
+                const response = await api.put(`/categories/${formData.catId}`, newCatData);
+                setCategories(current => current.map(cat =>
+                    cat.catId === formData.catId ? response.data : cat
                 ));
             } else {
                 const response = await api.post("/categories", newCatData);
-                setCategories([{ ...newCatData, id: response.data.id }, ...categories]);
+                setCategories(current => [response.data, ...current]);
                 toast.success("Category created successfully!");
             }
             setIsModalOpen(false);
@@ -176,7 +182,7 @@ const Category = () => {
         if (window.confirm("Are you sure you want to delete this category?")) {
             try {
                 await api.delete(`/categories/${catIdToDelete}`);
-                setCategories(categories.filter(cat => cat.catId !== catIdToDelete));
+                setCategories(current => current.filter(cat => cat.catId !== catIdToDelete));
 
                 if (currentCategories.length === 1 && currentPage > 1) {
                     setCurrentPage(currentPage - 1);
@@ -217,24 +223,9 @@ const Category = () => {
             subcategory: "",
             images: Array.isArray(category.images) ? category.images : (category.images ? [category.images] : [])
         });
-        setSubcategories(category.subcategory || []);
+        setSubcategories(Array.isArray(category.subcategory) ? category.subcategory : []);
         setIsEditing(true);
         setIsModalOpen(true);
-    };
-
-    // Helper for dummy date formatting if missing
-    const formatDate = (dateString) => {
-        if (!dateString) {
-            return {
-                date: "20 May 2024",
-                time: "10:30 AM"
-            };
-        }
-        const d = new Date(dateString);
-        return {
-            date: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-            time: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        };
     };
 
     // ---- Renderers ----
@@ -327,6 +318,22 @@ const Category = () => {
                     <div className="w-10 h-10 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin mb-4"></div>
                     <p className="text-gray-500 font-bold">Loading Categories...</p>
                 </div>
+            ) : loadError ? (
+                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-12 flex flex-col items-center justify-center text-center">
+                    <FiAlertCircle className="text-red-500 text-3xl mb-3" />
+                    <h3 className="text-lg font-bold text-slate-800">Categories could not be loaded</h3>
+                    <p className="text-gray-500 text-sm mt-1">{loadError}</p>
+                    <button
+                        onClick={() => {
+                            setLoadError("");
+                            setLoading(true);
+                            fetchCategories();
+                        }}
+                        className="mt-4 rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700"
+                    >
+                        Try again
+                    </button>
+                </div>
             ) : currentCategories.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-16 flex flex-col items-center justify-center">
                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-4">
@@ -354,7 +361,7 @@ const Category = () => {
                                 {currentCategories.map((cat, ind) => {
                                     const sNo = (currentPage - 1) * itemsPerPage + ind + 1;
                                     const status = cat.status || (ind % 4 === 3 ? 'Inactive' : 'Active');
-                                    const totalProds = cat.totalProducts || Math.floor(Math.random() * 20 + 2);
+                                    const totalProds = Number.isFinite(Number(cat.totalProducts)) ? Number(cat.totalProducts) : "—";
 
                                     return (
                                         <tr key={cat.catId} className="hover:bg-gray-50/50 transition-colors group">
@@ -413,7 +420,7 @@ const Category = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
                     {currentCategories.map((cat, ind) => {
                         const status = cat.status || (ind % 4 === 3 ? 'Inactive' : 'Active');
-                        const totalProds = cat.totalProducts || Math.floor(Math.random() * 20 + 2);
+                        const totalProds = Number.isFinite(Number(cat.totalProducts)) ? Number(cat.totalProducts) : "—";
 
                         return (
                             <div key={cat.catId} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
