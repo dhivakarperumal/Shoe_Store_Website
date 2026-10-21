@@ -11,6 +11,11 @@ const AdminLayout = () => {
     );
 
     useEffect(() => {
+        document.body.classList.add("admin-theme-active");
+        return () => document.body.classList.remove("admin-theme-active");
+    }, []);
+
+    useEffect(() => {
         const handleResize = () => {
             const isLg = window.innerWidth >= 1024;
             setIsLargeScreen(isLg);
@@ -37,7 +42,7 @@ const AdminLayout = () => {
                 className={`
           flex flex-col flex-1 min-w-0 min-h-screen
           transition-all duration-300 ease-in-out
-          ${isLargeScreen ? (sidebarCollapsed ? "lg:ml-20" : "lg:ml-72") : ""}
+          ${isLargeScreen ? (sidebarCollapsed ? "lg:ml-20" : "lg:ml-80") : ""}
         `}
             >
                 {/* Header */}

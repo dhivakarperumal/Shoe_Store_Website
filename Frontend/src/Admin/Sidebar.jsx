@@ -164,34 +164,33 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
       <aside
         className={`
         fixed top-0 left-0 z-50 h-full
-        bg-[#1F0A3C] border-r border-white/5
+        bg-secondary border-r border-white/5
         font-sans
         
         flex flex-col transition-all duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
-        ${collapsed ? "lg:w-20 w-full" : "w-full lg:w-72"}
+        ${collapsed ? "lg:w-20 w-full" : "w-full lg:w-80"}
       `}
       >
         {/* ========== LOGO ========== */}
        <div className="relative overflow-hidden px-4 pt-5 pb-5 border-b border-white/10">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-emerald-500/15 via-transparent to-cyan-500/5" />
-          <div className="relative flex items-center gap-3">
-            <div className="w-11 h-11 rounded-3xl bg-white border border-emerald-300/10 flex items-center justify-center shadow-2xl shadow-emerald-500/10 overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-[#D99A32]/15 via-transparent to-[#F9D976]/5" />
+          <div className={`relative flex ${collapsed ? "justify-center" : "justify-start"} items-center gap-3`}>
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-white">
               <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-8 h-8 object-contain"
-                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=VR&background=1B4D22&color=fff"; }}
+                src="/images/Adminlogo.png"
+                alt="Style Hub admin logo"
+                className="h-full w-full object-contain"
               />
             </div>
             {!collapsed && (
-              <div className="overflow-hidden">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#D4AF37] mb-1">
-                  Saree World
+              <div className="min-w-0 overflow-hidden">
+                <p className="truncate text-sm font-extrabold uppercase tracking-[0.15em] text-primary-light">
+                  Style Hub
                 </p>
-                <p className="text-sm font-semibold tracking-wide text-white">
-                  Fashion Store Admin
+                <p className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-light/70">
+                  Shoes · Bags · Belts
                 </p>
               </div>
             )}
@@ -199,7 +198,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
           <button
             onClick={onClose}
-            className="ml-auto p-2 rounded-xl text-white/40 hover:bg-white/5 lg:hidden border border-transparent hover:border-white/10 transition-all"
+            className="ml-auto p-2 rounded-xl text-primary-light/80 hover:bg-white/10 lg:hidden border border-transparent hover:border-white/20 transition-all"
           >
             <X className="w-5 h-5" />
           </button>
@@ -222,12 +221,12 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
                       ${isMenuOpen || isAnyChildActive
-                        ? "bg-[#FCD34D]/20 text-white"
-                        : "text-white/50 hover:bg-white/5 hover:text-white"
+                        ? "bg-primary text-secondary"
+                              : "text-primary-light/80 hover:bg-white/10 hover:text-primary-light"
                       }
                     `}
                   >
-                    <Icon className={`w-5 h-5 shrink-0 ${isMenuOpen || isAnyChildActive ? "text-[#FCD34D]" : ""}`} />
+                    <Icon className={`w-5 h-5 shrink-0 ${isMenuOpen || isAnyChildActive ? "text-secondary" : ""}`} />
 
                     {!collapsed && (
                       <>
@@ -272,12 +271,12 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                             className={`
                               flex items-center gap-3 px-4 py-2.5 rounded-md text-xs font-medium tracking-wide transition-all
                               ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path)))
-                                ? "bg-gradient-to-r from-[#D4AF37] to-[#FBBF24] text-white shadow-lg shadow-[#D4AF37]/20"
-                                : "text-white/40 hover:text-white hover:bg-white/5"
+                                ? "bg-primary text-secondary shadow-lg shadow-primary/20"
+                                : "text-primary-light/70 hover:text-primary-light hover:bg-white/10"
                               }
                             `}
                           >
-                            <SubIcon className={`w-5 h-6 shrink-0 ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path))) ? "text-white" : ""}`} />
+                            <SubIcon className={`w-5 h-6 shrink-0 ${(location.pathname === sub.path || (sub.path !== "/admin" && location.pathname.startsWith(sub.path))) ? "text-secondary" : ""}`} />
                             <span className="flex-1">{sub.label}</span>
                             {badgeCount > 0 && (
                               <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-fit">
@@ -308,12 +307,12 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-md transition-all
                   ${isActive
-                    ? "bg-gradient-to-r from-[#D4AF37] to-[#FBBF24] text-white shadow-xl shadow-[#D4AF37]/20"
-                    : "text-white/50 hover:bg-white/5 hover:text-white"
+                    ? "bg-primary text-secondary shadow-xl shadow-primary/20"
+                    : "text-primary-light/80 hover:bg-white/10 hover:text-primary-light"
                   }
                 `}
               >
-                <Icon className={`w-5 h-6 shrink-0 ${isActive ? "text-white" : ""}`} />
+                <Icon className={`w-5 h-6 shrink-0 ${isActive ? "text-secondary" : ""}`} />
                 {!collapsed && <span className="text-sm font-semibold tracking-wide">{item.label}</span>}
               </NavLink>
             );
@@ -322,16 +321,16 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
 
         {/* ========== FOOTER / PROFILE ========== */}
         {!collapsed && (
-          <div className="p-4 mx-3 mb-6 bg-[#21094E]/50 rounded-2xl border border-white/10 relative">
+          <div className="p-4 mx-3 mb-6 bg-white/10 rounded-2xl border border-white/15 relative">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
                 <p className="font-bold text-black text-lg">{(profileName || "Admin User").charAt(0).toUpperCase()}</p>
               </div>
               <div className="overflow-hidden flex-1">
-                <p className="text-sm font-semibold text-white truncate">{(profileName || "Admin User")}</p>
-                <p className="text-[10px] text-gray-400 font-medium truncate">Super Admin</p>
+                <p className="text-sm font-semibold text-primary-light truncate">{(profileName || "Admin User")}</p>
+                <p className="text-[10px] text-primary-light/70 font-medium truncate">Super Admin</p>
               </div>
-              <ChevronDown className="w-4 h-4 text-white/50" />
+              <ChevronDown className="w-4 h-4 text-primary-light/70" />
             </div>
           </div>
         )}

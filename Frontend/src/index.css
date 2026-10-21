@@ -244,3 +244,148 @@ body{
     print-color-adjust: exact !important;
   }
 }
+
+body.admin-theme-active {
+  --admin-primary: var(--color-primary);
+  --admin-primary-light: var(--color-primary-light);
+  --admin-primary-dark: var(--color-primary-dark);
+  --admin-secondary: var(--color-secondary);
+  --admin-accent: var(--color-accent);
+}
+
+body.admin-theme-active [class~="bg-[#1F0A3C]"],
+body.admin-theme-active [class~="bg-[#240046]"],
+body.admin-theme-active [class~="bg-[#260642]"],
+body.admin-theme-active [class~="bg-[#350866]"],
+body.admin-theme-active [class~="bg-[#3c096c]"],
+body.admin-theme-active [class~="bg-[#4b0b78]"],
+body.admin-theme-active [class~="bg-[#7b2cbf]"],
+body.admin-theme-active [class~="bg-[#8B5CF6]"],
+body.admin-theme-active [class~="bg-[#7C3AED]"],
+body.admin-theme-active [class~="bg-[#6D28D9]"],
+body.admin-theme-active [class~="bg-[#7c22ce]"],
+body.admin-theme-active [class~="bg-[#8a2be2]"],
+body.admin-theme-active [class~="bg-[#4318FF]"],
+body.admin-theme-active [class~="bg-blue-600"],
+body.admin-theme-active [class~="bg-blue-700"],
+body.admin-theme-active [class~="bg-indigo-600"],
+body.admin-theme-active [class~="bg-indigo-700"],
+body.admin-theme-active [class~="bg-purple-500"],
+body.admin-theme-active [class~="bg-purple-600"],
+body.admin-theme-active [class~="bg-purple-700"],
+body.admin-theme-active [class~="bg-violet-500"],
+body.admin-theme-active [class~="bg-violet-600"],
+body.admin-theme-active [class~="bg-violet-700"] {
+  background-color: var(--admin-secondary) !important;
+}
+
+body.admin-theme-active [class~="bg-[#21094E]/50"] {
+  background-color: color-mix(in srgb, var(--admin-secondary) 50%, transparent) !important;
+}
+
+body.admin-theme-active [class~="bg-blue-50"],
+body.admin-theme-active [class~="bg-blue-100"],
+body.admin-theme-active [class~="bg-indigo-50"],
+body.admin-theme-active [class~="bg-indigo-100"],
+body.admin-theme-active [class~="bg-purple-50"],
+body.admin-theme-active [class~="bg-purple-100"],
+body.admin-theme-active [class~="bg-violet-50"],
+body.admin-theme-active [class~="bg-violet-100"] {
+  background-color: color-mix(in srgb, var(--admin-primary) 12%, white) !important;
+}
+
+body.admin-theme-active [class~="text-[#FCD34D]"],
+body.admin-theme-active [class~="text-[#D4AF37]"],
+body.admin-theme-active [class~="text-[#FBBF24]"] {
+  color: var(--admin-primary-light) !important;
+}
+
+body.admin-theme-active [class~="text-[#4318FF]"],
+body.admin-theme-active [class~="text-[#7b2cbf]"],
+body.admin-theme-active [class~="text-[#4b0b78]"],
+body.admin-theme-active [class~="text-[#8B5CF6]"],
+body.admin-theme-active [class~="text-[#2B3674]"],
+body.admin-theme-active [class~="text-[#7C3AED]"],
+body.admin-theme-active [class~="text-[#6D28D9]"],
+body.admin-theme-active [class~="text-[#7c22ce]"],
+body.admin-theme-active [class~="text-[#8a2be2]"],
+body.admin-theme-active [class~="text-blue-500"],
+body.admin-theme-active [class~="text-blue-600"],
+body.admin-theme-active [class~="text-blue-700"],
+body.admin-theme-active [class~="text-indigo-500"],
+body.admin-theme-active [class~="text-indigo-600"],
+body.admin-theme-active [class~="text-indigo-700"],
+body.admin-theme-active [class~="text-purple-500"],
+body.admin-theme-active [class~="text-purple-600"],
+body.admin-theme-active [class~="text-purple-700"],
+body.admin-theme-active [class~="text-violet-500"],
+body.admin-theme-active [class~="text-violet-600"],
+body.admin-theme-active [class~="text-violet-700"] {
+  color: var(--admin-primary-dark) !important;
+}
+
+body.admin-theme-active [class~="border-blue-200"],
+body.admin-theme-active [class~="border-blue-300"],
+body.admin-theme-active [class~="border-indigo-200"],
+body.admin-theme-active [class~="border-purple-200"],
+body.admin-theme-active [class~="border-violet-200"],
+body.admin-theme-active [class~="border-[#4b0b78]"],
+body.admin-theme-active [class~="border-[#8B5CF6]"],
+body.admin-theme-active [class~="border-[#7b2cbf]"],
+body.admin-theme-active [class~="border-purple-500"],
+body.admin-theme-active [class~="border-violet-300"],
+body.admin-theme-active [class~="border-violet-500"] {
+  border-color: color-mix(in srgb, var(--admin-primary) 45%, white) !important;
+}
+
+body.admin-theme-active [class~="from-[#1F0A3C]"],
+body.admin-theme-active [class~="from-[#240046]"],
+body.admin-theme-active [class~="from-[#4b0b78]"],
+body.admin-theme-active [class~="from-blue-500"],
+body.admin-theme-active [class~="from-blue-600"],
+body.admin-theme-active [class~="from-indigo-500"],
+body.admin-theme-active [class~="from-indigo-600"],
+body.admin-theme-active [class~="from-purple-500"],
+body.admin-theme-active [class~="from-violet-500"],
+body.admin-theme-active [class~="from-violet-600"] {
+  --tw-gradient-from: var(--admin-secondary) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: color-mix(in srgb, var(--admin-secondary), transparent) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+body.admin-theme-active [class~="to-[#3c096c]"],
+body.admin-theme-active [class~="to-[#7b2cbf]"],
+body.admin-theme-active [class~="to-[#7c22ce]"],
+body.admin-theme-active [class~="to-[#A855F7]"],
+body.admin-theme-active [class~="to-[#6D28D9]"],
+body.admin-theme-active [class~="to-[#0EA5E9]"],
+body.admin-theme-active [class~="to-[#10B981]"],
+body.admin-theme-active [class~="to-[#FBBF24]"],
+body.admin-theme-active [class~="to-[#F97316]"],
+body.admin-theme-active [class~="to-[#06B6D4]"],
+body.admin-theme-active [class~="to-[#EC4899]"],
+body.admin-theme-active [class~="to-blue-800"],
+body.admin-theme-active [class~="to-indigo-600"],
+body.admin-theme-active [class~="to-purple-600"],
+body.admin-theme-active [class~="to-violet-600"] {
+  --tw-gradient-to: var(--admin-primary) var(--tw-gradient-to-position) !important;
+}
+
+body.admin-theme-active [class~="hover:bg-blue-800"]:hover,
+body.admin-theme-active [class~="hover:bg-violet-700"]:hover,
+body.admin-theme-active [class~="hover:bg-purple-700"]:hover,
+body.admin-theme-active [class~="hover:bg-[#10002b]"]:hover,
+body.admin-theme-active [class~="hover:bg-[#5a189a]"]:hover {
+  background-color: var(--admin-primary-dark) !important;
+}
+
+body.admin-theme-active [class~="focus:border-blue-500"]:focus,
+body.admin-theme-active [class~="focus:border-[#4b0b78]"]:focus,
+body.admin-theme-active [class~="focus:border-[#4318FF]"]:focus {
+  border-color: var(--admin-primary) !important;
+}
+
+body.admin-theme-active [class~="ring-[#4318FF]"],
+body.admin-theme-active [class~="focus:ring-[#4318FF]"]:focus {
+  --tw-ring-color: var(--admin-primary) !important;
+}

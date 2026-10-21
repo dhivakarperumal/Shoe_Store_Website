@@ -100,10 +100,10 @@ const OrderDetail = () => {
 
         const html = `
         <div id="printableArea" style="font-family: 'Segoe UI', Arial, sans-serif; color: #333; padding: 40px; border: 1px solid #eee; max-width: 800px; margin: auto;">
-          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #3b82f6;padding-bottom:20px;margin-bottom:30px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #D99A32;padding-bottom:20px;margin-bottom:30px;">
             <img src="${logoUrl}" style="height:70px;" />
             <div style="text-align:right;">
-                <div style="font-size:32px;color:#3b82f6;font-weight:900;text-transform:uppercase;letter-spacing:1px;">Invoice</div>
+                <div style="font-size:32px;color:#D99A32;font-weight:900;text-transform:uppercase;letter-spacing:1px;">Invoice</div>
                 <div style="font-size:14px;color:#94a3b8;font-weight:bold;margin-top:4px;">${formatOrderId(order)}</div>
             </div>
           </div>
@@ -126,7 +126,7 @@ const OrderDetail = () => {
                 Near AVS Mahal and Jain Temple 635601<br/>
                 Ph: +91 7010575375
               </p>
-              <p style="margin:5px 0;"><strong>Status:</strong> <span style="text-transform:uppercase; font-size:10px; background:#eff6ff; color:#1d4ed8; padding:2px 8px; border-radius:4px; font-weight:bold;">${order.status || "-"}</span></p>
+              <p style="margin:5px 0;"><strong>Status:</strong> <span style="text-transform:uppercase; font-size:10px; background:#FDF5E5; color:#A85B20; padding:2px 8px; border-radius:4px; font-weight:bold;">${order.status || "-"}</span></p>
               <p style="margin:5px 0;"><strong>Payment:</strong> ${order.payment_method || "Online"}</p>
               <p style="margin:5px 0;"><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
             </div>
@@ -160,7 +160,7 @@ const OrderDetail = () => {
                 </div>
                 <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:1px solid #f1f5f9; margin-top:10px;">
                     <span style="font-size:16px; font-weight:900; color:#1e293b;">Total Amount:</span>
-                    <span style="font-size:20px; font-weight:900; color:#3b82f6;">₹${Number(order.total_amount).toLocaleString()}</span>
+                    <span style="font-size:20px; font-weight:900; color:#D99A32;">₹${Number(order.total_amount).toLocaleString()}</span>
                 </div>
             </div>
           </div>

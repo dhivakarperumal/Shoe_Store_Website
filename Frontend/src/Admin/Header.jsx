@@ -417,8 +417,8 @@ const Header = ({ onMenuClick }) => {
               onClick={() => { setShowSearch(p => !p); if (showSearch) clearSearch(); }}
               className={`p-2.5 rounded-xl transition-all active:scale-95
               ${showSearch
-                ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-purple-500/30'
-                : 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md shadow-purple-500/20 hover:shadow-lg hover:scale-105'}`}
+                ? 'bg-gradient-to-br from-[#D99A32] to-[#F9D976] text-[#0B1B30] shadow-lg shadow-amber-500/30'
+                : 'bg-gradient-to-br from-[#D99A32] to-[#F9D976] text-[#0B1B30] shadow-md shadow-amber-500/20 hover:shadow-lg hover:scale-105'}`}
             >
               <Search className="w-[18px] h-[18px]" />
             </button>

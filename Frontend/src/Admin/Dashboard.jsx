@@ -145,8 +145,8 @@ const Dashboard = () => {
             data: revenueTrends.length > 0
                 ? revenueTrends.map(t => t.revenue)
                 : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            backgroundColor: '#D4AF37',
-            borderColor: '#B8941F',
+            backgroundColor: '#D99A32',
+            borderColor: '#A85B20',
             borderWidth: 1,
             borderRadius: 6,
             borderSkipped: false,
@@ -226,14 +226,14 @@ const Dashboard = () => {
     }));
 
     const cardStyles = [
-        { gradient: "from-[#6C3DE8] to-[#A855F7]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#2563EB] to-[#0EA5E9]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#059669] to-[#10B981]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#F59E0B] to-[#FBBF24]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#EF4444] to-[#F97316]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#0891B2] to-[#06B6D4]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#DB2777] to-[#EC4899]", icon_bg: "bg-white/20" },
-        { gradient: "from-[#7C3AED] to-[#6D28D9]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
+        { gradient: "from-[#0B1B30] to-[#D99A32]", icon_bg: "bg-white/20" },
     ];
 
     return (
@@ -286,12 +286,12 @@ const Dashboard = () => {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {[
-                        { label: "Add Product",    icon: <FiBox size={20} />,          color: "from-[#6C3DE8] to-[#A855F7]", path: "/admin/products/add" },
-                        { label: "New Order",      icon: <FiShoppingBag size={20} />,  color: "from-[#2563EB] to-[#0EA5E9]", path: "/admin/orders/create" },
-                        { label: "All Orders",     icon: <FaTruck size={20} />,         color: "from-[#059669] to-[#10B981]", path: "/admin/orders/all" },
-                        { label: "Customers",      icon: <FiUsers size={20} />,        color: "from-[#F59E0B] to-[#FBBF24]", path: "/admin/users/all" },
-                        { label: "Stock Details",  icon: <FiAlertTriangle size={20} />,color: "from-[#EF4444] to-[#F97316]", path: "/admin/products/stock" },
-                        { label: "Reports",        icon: <FiTrendingUp size={20} />,   color: "from-[#DB2777] to-[#EC4899]", path: "/admin/reports" },
+                        { label: "Add Product",    icon: <FiBox size={20} />,          color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/products/add" },
+                        { label: "New Order",      icon: <FiShoppingBag size={20} />,  color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/orders/create" },
+                        { label: "All Orders",     icon: <FaTruck size={20} />,         color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/orders/all" },
+                        { label: "Customers",      icon: <FiUsers size={20} />,        color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/users/all" },
+                        { label: "Stock Details",  icon: <FiAlertTriangle size={20} />,color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/products/stock" },
+                        { label: "Reports",        icon: <FiTrendingUp size={20} />,   color: "from-[#0B1B30] to-[#D99A32]", path: "/admin/reports" },
                     ].map((action, i) => (
                         <button
                             key={i}
