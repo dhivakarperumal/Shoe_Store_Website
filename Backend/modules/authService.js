@@ -54,6 +54,61 @@ function createAuthService(pool) {
       return toPublicUser(users[0]);
     },
 
+    async listUsers() {
+      const [users] = await pool.execute(
+        `SELECT ${USER_COLUMNS} FROM users ORDER BY created_at DESC, id DESC`,
+      );
+      return users.map(toPublicUser);
+    },
+
+    async getUserById(id) {
+      const [users] = await pool.execute(
+        `SELECT ${USER_COLUMNS} FROM users WHERE id = ? LIMIT 1`,
+        [id],
+      );
+      return users[0] ? toPublicUser(users[0]) : null;
+    },
+
+    async createUser({ username, email, phone, password, role, status }) {
+      const passwordHash = await bcrypt.hash(password, 12);
+      const userId = randomUUID();
+      await pool.execute(
+        "INSERT INTO users (user_id, username, email, phone, password_hash, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [userId, username, email, phone, passwordHash, role, status],
+      );
+      const [users] = await pool.execute(
+        `SELECT ${USER_COLUMNS} FROM users WHERE user_id = ?`,
+        [userId],
+      );
+      return toPublicUser(users[0]);
+    },
+
+    async updateUser(id, { username, email, phone, role, status }) {
+      const [result] = await pool.execute(
+        `UPDATE users
+         SET username = ?, email = ?, phone = ?, role = ?, status = ?
+         WHERE id = ?`,
+        [username, email, phone, role, status, id],
+      );
+      if (!result.affectedRows) {
+        const [existingUsers] = await pool.execute(
+          `SELECT ${USER_COLUMNS} FROM users WHERE id = ? LIMIT 1`,
+          [id],
+        );
+        return existingUsers[0] ? toPublicUser(existingUsers[0]) : null;
+      }
+      const [users] = await pool.execute(
+        `SELECT ${USER_COLUMNS} FROM users WHERE id = ? LIMIT 1`,
+        [id],
+      );
+      return users[0] ? toPublicUser(users[0]) : null;
+    },
+
+    async deleteUser(id) {
+      const [result] = await pool.execute("DELETE FROM users WHERE id = ?", [id]);
+      return result.affectedRows > 0;
+    },
+
     async login(identifier, password) {
       const [users] = await pool.execute(
         `SELECT ${AUTH_USER_COLUMNS} FROM users WHERE email = ? OR phone = ? LIMIT 1`,

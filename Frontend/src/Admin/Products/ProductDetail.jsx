@@ -15,6 +15,13 @@ import {
 } from "react-icons/fi";
 import { BsQrCode } from "react-icons/bs";
 
+const resolveImageUrl = (image) => {
+    if (!image || typeof image !== "string") return "";
+    if (/^(https?:|data:|blob:)/i.test(image)) return image;
+    const backend = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    return `${backend}${image.startsWith("/") ? image : `/${image}`}`;
+};
+
 const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -93,7 +100,7 @@ const ProductDetail = () => {
                     <div className="bg-white p-3 sm:p-4 rounded-[2rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden group">
                         <div className="aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden bg-gray-50">
                             {displayImages.length > 0 ? (
-                                <img src={displayImages[activeImage] || displayImages[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
+                                <img src={resolveImageUrl(displayImages[activeImage] || displayImages[0])} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-300">No images</div>
                             )}
@@ -107,7 +114,7 @@ const ProductDetail = () => {
                                     onClick={() => setActiveImage(i)}
                                     className={`aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all shadow-sm ${activeImage === i ? 'border-blue-500 scale-95 ring-2 ring-blue-50' : 'border-white hover:border-blue-200 opacity-60 hover:opacity-100'}`}
                                 >
-                                    <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                                    <img src={resolveImageUrl(img)} alt="thumb" className="w-full h-full object-cover" />
                                 </button>
                             ))}
                         </div>

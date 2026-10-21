@@ -18,9 +18,15 @@ import {
     FiBox,
     FiChevronDown
 } from "react-icons/fi";
-import imageCompression from "browser-image-compression";
 import { toast, Toaster } from "react-hot-toast";
 import { useAuth } from "../../PrivateRouter/AuthContext";
+
+const resolveCategoryImage = (image) => {
+    if (typeof image !== "string" || !image) return "";
+    if (/^(https?:|data:|blob:)/i.test(image)) return image;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    return `${backendUrl}${image.startsWith("/") ? image : `/${image}`}`;
+};
 
 const Category = () => {
     const { user } = useAuth();
@@ -117,26 +123,38 @@ const Category = () => {
     };
 
     const handleImageUpload = async (e) => {
-        try {
-            const files = Array.from(e.target.files);
-            const imagesArray = await Promise.all(
-                files.map(async (file) => {
-                    const compressed = await imageCompression(file, {
-                        maxSizeMB: 0.2,
-                        maxWidthOrHeight: 600,
-                    });
-                    return imageCompression.getDataUrlFromFile(compressed);
-                })
-            );
+        const files = Array.from(e.target.files || []);
+        const currentImages = Array.isArray(formData.images) ? formData.images : [];
+        if (!files.length) return;
+        if (currentImages.length + files.length > 20) {
+            toast.error("Upload no more than 20 images for a category.");
+            e.target.value = "";
+            return;
+        }
+        const oversizedFile = files.find(file => file.size > 5 * 1024 * 1024);
+        if (oversizedFile) {
+            toast.error(`${oversizedFile.name} exceeds the 5 MB image limit.`);
+            e.target.value = "";
+            return;
+        }
 
-            setFormData((p) => ({
-                ...p,
-                images: [...(Array.isArray(p.images) ? p.images : []), ...imagesArray],
+        const payload = new FormData();
+        files.forEach(file => payload.append("images", file));
+        try {
+            const { data } = await api.post("/categories/upload", payload);
+            if (!Array.isArray(data.images) || data.images.length !== files.length) {
+                throw new Error("The category image upload response was incomplete.");
+            }
+            setFormData(previous => ({
+                ...previous,
+                images: [...(Array.isArray(previous.images) ? previous.images : []), ...data.images],
             }));
-            toast.success("Images added!");
+            toast.success("Category images uploaded to the server.");
         } catch (error) {
             console.error("Image upload failed:", error);
-            toast.error("Image upload failed");
+            toast.error(error.response?.data?.message || "Image upload failed.");
+        } finally {
+            e.target.value = "";
         }
     };
 
@@ -371,7 +389,7 @@ const Category = () => {
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                                         {cat.images && cat.images.length > 0 ? (
-                                                            <img src={Array.isArray(cat.images) ? cat.images[0] : cat.images} alt={cat.name} className="w-full h-full object-cover" />
+                                                            <img src={resolveCategoryImage(Array.isArray(cat.images) ? cat.images[0] : cat.images)} alt={cat.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center"><FiImage className="text-gray-400" /></div>
                                                         )}
@@ -427,7 +445,7 @@ const Category = () => {
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="w-14 h-14 rounded-xl overflow-hidden border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0">
                                         {cat.images && cat.images.length > 0 ? (
-                                            <img src={Array.isArray(cat.images) ? cat.images[0] : cat.images} alt={cat.name} className="w-full h-full object-cover" />
+                                            <img src={resolveCategoryImage(Array.isArray(cat.images) ? cat.images[0] : cat.images)} alt={cat.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <FiImage className="text-gray-400 text-xl" />
                                         )}
@@ -598,7 +616,7 @@ const Category = () => {
                                             <div className="grid grid-cols-3 gap-2 mb-2">
                                                 {formData.images.map((imgUrl, idx) => (
                                                     <div key={idx} className="relative group w-full h-20 rounded-xl overflow-hidden border border-gray-200">
-                                                        <img src={imgUrl} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                                                        <img src={resolveCategoryImage(imgUrl)} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
                                                         <button
                                                             onClick={() => removeImage(idx)}
                                                             className="absolute top-1 right-1 p-1 bg-white/90 hover:bg-red-50 text-red-500 rounded opacity-0 group-hover:opacity-100 transition-all shadow-sm"
@@ -620,7 +638,7 @@ const Category = () => {
                                                     <FiUploadCloud size={16} />
                                                 </div>
                                                 <p className="text-xs font-bold text-slate-700">Upload Images</p>
-                                                <p className="text-[10px] text-gray-500 mt-0.5 font-medium">PNG, JPG up to 5MB</p>
+                                                <p className="text-[10px] text-gray-500 mt-0.5 font-medium">PNG, JPG, WEBP or GIF up to 5MB each</p>
                                             </label>
                                         )}
                                     </div>

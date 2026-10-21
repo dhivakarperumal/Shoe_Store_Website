@@ -61,9 +61,14 @@ const AllProducts = () => {
 
         setRapidSaving(true);
         try {
+            const { data: codeData } = await api.get("/products/latest-code");
             await api.post("/products", {
                 ...rapidProd,
-                category: "Saree",
+                product_code: codeData.latestCode,
+                category: "Shoes",
+                offer: 0,
+                offer_price: Number(rapidProd.mrp),
+                rating: 5,
                 total_stock: "0",
                 variants: []
             });
@@ -142,14 +147,41 @@ const AllProducts = () => {
 
         setUpdatingStock(true);
         try {
-            // Send partial update - most backends handle this if we send just what changed, 
-            // but for ours we might need to send all or use a specific endpoint.
-            // Assuming current backend needs a full update based on our previous look.
-            const updatedProduct = { ...currentProduct, total_stock: parseInt(newStock) };
+            const targetStock = Math.max(0, Number.parseInt(newStock, 10) || 0);
+            const variants = (currentProduct.variants || []).map((variant) => ({
+                ...variant,
+                sizesStock: { ...(variant.sizesStock || {}) },
+            }));
+            const stockEntries = variants.flatMap((variant) =>
+                (variant.selectedSizes || []).map((size) => ({ variant, size })),
+            );
+            if (!stockEntries.length && targetStock > 0) {
+                variants.push({
+                    color: "#795548",
+                    colorName: "Brown",
+                    images: [],
+                    selectedSizes: ["Free Size"],
+                    sizesStock: { "Free Size": targetStock },
+                });
+            } else if (stockEntries.length) {
+                let remaining = targetStock;
+                stockEntries.forEach(({ variant, size }, index) => {
+                    const current = Number(variant.sizesStock[size]) || 0;
+                    const nextQuantity = index === stockEntries.length - 1
+                        ? remaining
+                        : Math.min(current, remaining);
+                    variant.sizesStock[size] = nextQuantity;
+                    remaining -= nextQuantity;
+                });
+            }
+            const savedStatus = ["Active", "Inactive", "Draft"].includes(currentProduct.status)
+                ? currentProduct.status
+                : "Active";
+            const updatedProduct = { ...currentProduct, total_stock: targetStock, variants, status: savedStatus };
             await api.put(`/products/${currentProduct.id}`, updatedProduct);
 
             toast.success("Stock updated instantly!");
-            setProducts(products.map(p => p.id === currentProduct.id ? { ...p, total_stock: parseInt(newStock), status: parseInt(newStock) === 0 ? 'Out of Stock' : parseInt(newStock) < 10 ? 'Low Stock' : 'Active' } : p));
+            setProducts(products.map(p => p.id === currentProduct.id ? { ...p, total_stock: targetStock, variants, status: targetStock === 0 ? 'Out of Stock' : targetStock < 10 ? 'Low Stock' : 'Active' } : p));
             setCurrentProduct(null);
         } catch (error) {
             toast.error("Failed to update stock");
@@ -251,7 +283,7 @@ const AllProducts = () => {
                             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                             <input
                                 type="text"
-                                placeholder="Search sarees by name, SKU..."
+                                placeholder="Search products by name, SKU..."
                                 className="w-1/2 pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#7b2cbf] focus:bg-white transition-all text-sm font-medium text-slate-700"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -278,7 +310,7 @@ const AllProducts = () => {
                         onClick={() => navigate("/admin/products/add")}
                         className="flex items-center gap-2 bg-gradient-to-r from-[#240046] to-[#7b2cbf] hover:from-[#10002b] hover:to-[#5a189a] text-white px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-900/30 active:scale-95"
                     >
-                        <FiPlus size={16} /> Add New Saree
+                        <FiPlus size={16} /> Add New Product
                     </button>
                 </div>
                     </div>
@@ -294,7 +326,7 @@ const AllProducts = () => {
                                                 <input type="checkbox" className="rounded border-[#FCD34D]/40 accent-[#FCD34D]" />
                                             </th>
                                             <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider w-12">S.No.</th>
-                                            <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider">Saree</th>
+                                            <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider">Product</th>
                                             <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider">Category</th>
                                             <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider">Price</th>
                                             <th className="px-4 py-4 text-[11px] font-bold text-[#FCD34D] uppercase tracking-wider">Stock</th>
@@ -386,7 +418,7 @@ const AllProducts = () => {
                             {/* Table Footer / Pagination */}
                             <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
                                 <p className="text-xs text-gray-500 font-medium">
-                                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, pagination.total)} of {pagination.total} sarees
+                                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, pagination.total)} of {pagination.total} products
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <button

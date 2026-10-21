@@ -116,6 +116,32 @@ async function initializeDatabase(pool) {
       INDEX categories_status_idx (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS products (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      product_code VARCHAR(64) NOT NULL,
+      name VARCHAR(191) NOT NULL,
+      description TEXT DEFAULT NULL,
+      category VARCHAR(120) NOT NULL,
+      subcategory VARCHAR(120) DEFAULT NULL,
+      brand VARCHAR(120) DEFAULT NULL,
+      material VARCHAR(120) DEFAULT NULL,
+      mrp DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      offer DECIMAL(5, 2) NOT NULL DEFAULT 0,
+      offer_price DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      rating DECIMAL(2, 1) NOT NULL DEFAULT 5,
+      total_stock INT UNSIGNED NOT NULL DEFAULT 0,
+      variants JSON NOT NULL,
+      status VARCHAR(32) NOT NULL DEFAULT 'Active',
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY products_code_unique (product_code),
+      INDEX products_name_idx (name),
+      INDEX products_category_idx (category),
+      INDEX products_status_idx (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
 }
 
 module.exports = { createPool, initializeDatabase };

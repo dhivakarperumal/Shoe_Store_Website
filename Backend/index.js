@@ -9,6 +9,7 @@ const { createAuthController } = require("./controllers/authController");
 const createAuthRouter = require("./routers/authRouter");
 const createBannerRouter = require("./routers/bannerRouter");
 const createCategoryRouter = require("./routers/categoryRouter");
+const createProductRouter = require("./routers/productRouter");
 
 const port = Number(process.env.PORT || 5000);
 
@@ -36,6 +37,7 @@ app.get("/api/health", async (request, response) => {
 app.use("/api/auth", createAuthRouter(authController));
 app.use("/api/banners", createBannerRouter(pool));
 app.use("/api/categories", createCategoryRouter(pool));
+app.use("/api/products", createProductRouter(pool));
 
 app.use((error, request, response, next) => {
   if (error.type === "entity.too.large") {

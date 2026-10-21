@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../../api";
 import {
     FiSearch,
-    FiFilter,
     FiUserPlus,
     FiMoreVertical,
     FiMail,
@@ -10,24 +9,23 @@ import {
     FiCalendar,
     FiUserX,
     FiX,
-    FiEdit2,
     FiGrid,
     FiList
 } from "react-icons/fi";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 
-const deriveUserStatus = (user, index = 0) => {
+const deriveUserStatus = (user) => {
     if (user?.status) {
         return String(user.status).toLowerCase() === "inactive" ? "Inactive" : "Active";
     }
-    const numericId = Number(user?.id ?? index + 1) || index + 1;
-    return numericId % 6 === 0 || numericId % 9 === 0 ? "Inactive" : "Active";
+    return "Active";
 };
 
 const Users = ({ initialTab = "All" }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
     const [selectedTab, setSelectedTab] = useState(initialTab);
     const [selectedRole, setSelectedRole] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
@@ -51,77 +49,72 @@ const Users = ({ initialTab = "All" }) => {
         name: "",
         email: "",
         phone: "",
-        role: "user",
-        password: ""
+        role: "customer",
+        status: "active",
+        password: "",
     });
     const [submitLoading, setSubmitLoading] = useState(false);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await api.get("/auth/users");
-                // Transform data if needed for UI
-                const fetchedUsers = response.data.map((u, index) => ({
-                    id: u.id || u.user_id,
-                    name: u.name || u.username,
-                    email: u.email,
-                    role: u.role ? u.role.toLowerCase() : 'user',
-                    status: deriveUserStatus(u, index),
-                    joined: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A',
-                    rawCreated_at: u.created_at,
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.username)}&background=random`
-                }));
-                setUsers(fetchedUsers);
-            } catch (error) {
-                console.error("Failed to fetch users:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
+        setLoadError("");
         try {
             const response = await api.get("/auth/users");
-            const fetchedUsers = response.data.map((u, index) => ({
-                id: u.id || u.user_id,
-                name: u.name || u.username,
-                email: u.email,
-                role: u.role ? u.role.toLowerCase() : 'user',
-                status: deriveUserStatus(u, index),
-                joined: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A',
-                rawCreated_at: u.created_at,
-                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || u.username)}&background=random`
-            }));
+            if (!Array.isArray(response.data)) {
+                throw new Error("The users API returned an invalid response.");
+            }
+            const fetchedUsers = response.data.map((user, index) => {
+                const name = user.name || user.username || "Unnamed user";
+                const role = (user.role || "customer").toLowerCase();
+                return {
+                    ...user,
+                    id: user.id ?? user.user_id ?? index,
+                    username: user.username || name,
+                    name,
+                    email: user.email || "",
+                    phone: user.phone || "",
+                    role: role === "customer" ? "user" : role,
+                    status: deriveUserStatus(user),
+                    joined: user.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A",
+                    rawCreated_at: user.created_at,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+                };
+            });
             setUsers(fetchedUsers);
         } catch (error) {
             console.error("Failed to fetch users:", error);
+            setLoadError(error.response?.data?.message || "Unable to load users. Please try again.");
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSaveUser = async () => {
-        if (!formData.username || !formData.email) return;
+        if (!formData.username.trim() || !formData.email.trim() || !formData.phone.trim()) {
+            toast.error("Username, email, and phone number are required.");
+            return;
+        }
         if (!isEditing && !formData.password) return;
 
         setSubmitLoading(true);
         try {
             if (isEditing) {
-                await api.put(`/auth/users/${editUserId}`, { ...formData, role: formData.role.toLowerCase() });
+                await api.put(`/auth/users/${editUserId}`, { ...formData, role: formData.role === "user" ? "customer" : formData.role });
                 toast.success("User updated successfully!");
             } else {
-                await api.post("/auth/register", { ...formData, role: formData.role.toLowerCase() });
+                await api.post("/auth/users", { ...formData, role: formData.role === "user" ? "customer" : formData.role });
                 toast.success("User registered successfully!");
             }
             setIsModalOpen(false);
-            setFormData({ username: "", name: "", email: "", phone: "", role: "user", password: "" });
+            setFormData({ username: "", name: "", email: "", phone: "", role: "customer", status: "active", password: "" });
             setIsEditing(false);
             setEditUserId(null);
             fetchUsers();
@@ -140,23 +133,7 @@ const Users = ({ initialTab = "All" }) => {
             toast.success("User eliminated from system.");
             fetchUsers();
         } catch (error) {
-            toast.error("Failed to delete user");
-        }
-    };
-
-    const handleQuickRoleUpdate = async (id, newRole, user) => {
-        try {
-            const payload = {
-                username: user.username || user.name,
-                name: user.name,
-                email: user.email,
-                phone: user.phone || ""
-            };
-            await api.put(`/auth/users/${id}`, { ...payload, role: newRole.toLowerCase() });
-            toast.success(`Role updated to ${newRole.toLowerCase()}`);
-            fetchUsers();
-        } catch (error) {
-            toast.error("Failed to update role");
+            toast.error(error.response?.data?.message || "Failed to delete user.");
         }
     };
 
@@ -167,19 +144,12 @@ const Users = ({ initialTab = "All" }) => {
             email: user.email,
             phone: user.phone || "",
             role: user.role,
+            status: user.status.toLowerCase(),
             password: "" // Don't show password on edit
         });
         setEditUserId(user.id);
         setIsEditing(true);
         setIsModalOpen(true);
-    };
-
-    const getRoleStyle = (role) => {
-        const normalizedRole = role ? role.toLowerCase() : "";
-        if (normalizedRole.includes("admin")) return "bg-slate-900 text-white shadow-sm";
-        if (normalizedRole.includes("manager")) return "bg-indigo-50 text-indigo-600 border border-indigo-100";
-        if (normalizedRole.includes("dealer")) return "bg-amber-50 text-amber-600 border border-amber-100";
-        return "bg-emerald-50 text-emerald-600 border border-emerald-100"; // User / Customer
     };
 
     const isToday = (dateString) => {
@@ -192,16 +162,16 @@ const Users = ({ initialTab = "All" }) => {
     };
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const normalizedSearch = searchTerm.toLowerCase();
+        const matchesSearch = user.name.toLowerCase().includes(normalizedSearch) ||
+            user.email.toLowerCase().includes(normalizedSearch) ||
+            user.phone.toLowerCase().includes(normalizedSearch);
 
         const matchesTab = selectedTab === "All" || (selectedTab === "New" && isToday(user.rawCreated_at));
         const matchesRole = selectedRole === "all" || (user.role && user.role.toLowerCase() === selectedRole.toLowerCase());
 
         return matchesSearch && matchesTab && matchesRole;
     });
-
-    const newUsersCount = users.filter(u => isToday(u.rawCreated_at)).length;
 
     // Pagination Logic
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -219,7 +189,7 @@ const Users = ({ initialTab = "All" }) => {
     const activeUsers = users.filter(u => u.status === 'Active').length;
     const inactiveUsers = users.filter(u => u.status === 'Inactive').length;
     const adminUsers = users.filter(u => u.role === 'admin').length;
-    const regularUsers = users.filter(u => u.role === 'user' || !u.role).length;
+    const regularUsers = users.filter(u => !["admin", "manager", "dealer"].includes(u.role)).length;
     const adminPct = totalUsers ? Math.round((adminUsers / totalUsers) * 100) : 0;
     const userPct = totalUsers ? Math.round((regularUsers / totalUsers) * 100) : 0;
 
@@ -228,7 +198,12 @@ const Users = ({ initialTab = "All" }) => {
             <div className="max-w-[1600px] mx-auto px-2 sm:px-6 lg:px-2 py-6 space-y-6">
                 
                 {/* Header */}
-               
+                {loadError && (
+                    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <span>{loadError}</span>
+                        <button type="button" onClick={fetchUsers} className="font-bold underline">Try again</button>
+                    </div>
+                )}
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-5">
@@ -376,22 +351,20 @@ const Users = ({ initialTab = "All" }) => {
                                             </tr>
                                         ) : (
                                             currentItems.map((user, idx) => {
-                                                const mockPhone = user.phone || "+91 98765 4321" + (idx % 10);
-
                                                 return (
                                                     <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
                                                         <td className="px-6 py-4">
                                                             <input type="checkbox" className="rounded border-gray-300 text-[#4318FF] focus:ring-[#4318FF]" />
                                                         </td>
                                                         <td className="px-6 py-4 text-[13px] font-black text-[#4318FF]">
-                                                            CUS{1000 + (parseInt(user.id) || idx + 1)}
+                                                            {user.user_id || `CUS${1000 + (parseInt(user.id, 10) || idx + 1)}`}
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
                                                                 <img src={user.avatar} alt="avatar" className="w-8 h-8 rounded-full shadow-sm shrink-0" />
                                                                 <div>
                                                                     <div className="text-[13px] font-bold text-[#2B3674]">{user.name}</div>
-                                                                    <div className="text-[11px] text-gray-400 font-medium mt-0.5">{mockPhone}</div>
+                                                                    <div className="text-[11px] text-gray-400 font-medium mt-0.5">{user.phone || "No phone number"}</div>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -412,7 +385,7 @@ const Users = ({ initialTab = "All" }) => {
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="text-[12px] font-bold text-[#2B3674]">{user.joined}</div>
-                                                            <div className="text-[11px] text-gray-500 font-medium">10:30 AM</div>
+                                                            <div className="text-[11px] text-gray-500 font-medium">{user.created_at ? new Date(user.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</div>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center justify-center gap-2">
@@ -422,8 +395,16 @@ const Users = ({ initialTab = "All" }) => {
                                                                 <button
                                                                     onClick={() => openEditModal(user)}
                                                                     className="p-1.5 border border-gray-200 rounded hover:bg-gray-100 text-[#4318FF] transition-colors shadow-sm"
+                                                                    aria-label={`Edit ${user.name}`}
                                                                 >
                                                                     <FiMoreVertical size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteUser(user.id)}
+                                                                    className="p-1.5 border border-gray-200 rounded hover:bg-red-50 text-red-500 transition-colors shadow-sm"
+                                                                    aria-label={`Delete ${user.name}`}
+                                                                >
+                                                                    <FiUserX size={14} />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -447,8 +428,6 @@ const Users = ({ initialTab = "All" }) => {
                                 </div>
                             ) : (
                                 currentItems.map((user, idx) => {
-                                    const mockPhone = user.phone || "+91 98765 4321" + (idx % 10);
-
                                     return (
                                         <article key={user.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-lg transition-all">
                                             <div className="flex items-start justify-between gap-3 pb-4 border-b border-gray-100">
@@ -457,7 +436,7 @@ const Users = ({ initialTab = "All" }) => {
                                                     <div>
                                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.16em]">Customer</p>
                                                         <h4 className="text-[15px] font-black text-[#2B3674] mt-1">{user.name}</h4>
-                                                        <p className="text-[11px] text-gray-500 mt-0.5">CUS{1000 + (parseInt(user.id) || idx + 1)}</p>
+                                                        <p className="text-[11px] text-gray-500 mt-0.5">{user.user_id || `CUS${1000 + (parseInt(user.id, 10) || idx + 1)}`}</p>
                                                     </div>
                                                 </div>
                                                 <span className={`px-2.5 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap ${user.status === 'Active' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#ffedd5] text-[#ea580c]'}`}>
@@ -467,7 +446,7 @@ const Users = ({ initialTab = "All" }) => {
 
                                             <div className="mt-5 space-y-3 text-[12px] text-gray-600">
                                                 <div className="flex items-center gap-3 min-w-0"><FiMail size={14} className="text-violet-500 shrink-0" /> <span className="truncate">{user.email}</span></div>
-                                                <div className="flex items-center gap-3"><FiPhone size={14} className="text-violet-500 shrink-0" /> {mockPhone}</div>
+                                                <div className="flex items-center gap-3"><FiPhone size={14} className="text-violet-500 shrink-0" /> {user.phone || "No phone number"}</div>
                                                 <div className="flex items-center gap-3"><FiCalendar size={14} className="text-violet-500 shrink-0" /> Joined {user.joined}</div>
                                             </div>
 
@@ -486,8 +465,16 @@ const Users = ({ initialTab = "All" }) => {
                                                     <button
                                                         onClick={() => openEditModal(user)}
                                                         className="p-1.5 border border-gray-200 rounded hover:bg-gray-100 text-[#4318FF] transition-colors shadow-sm"
+                                                        aria-label={`Edit ${user.name}`}
                                                     >
                                                         <FiMoreVertical size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user.id)}
+                                                        className="p-1.5 border border-gray-200 rounded hover:bg-red-50 text-red-500 transition-colors shadow-sm"
+                                                        aria-label={`Delete ${user.name}`}
+                                                    >
+                                                        <FiUserX size={14} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -504,9 +491,7 @@ const Users = ({ initialTab = "All" }) => {
                             Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredUsers.length)} of {filteredUsers.length} customers
                         </p>
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 text-[13px] font-bold text-[#2B3674] shadow-sm">
-                                10 per page <span className="text-gray-400 text-[10px] ml-1">▼</span>
-                            </div>
+                            <span className="text-xs text-gray-400">10 per page</span>
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -530,7 +515,7 @@ const Users = ({ initialTab = "All" }) => {
                                         onClick={() => setCurrentPage(totalPages)}
                                         className="w-8 h-8 flex items-center justify-center rounded-lg text-[13px] font-bold border border-gray-200 text-[#2B3674] hover:bg-gray-50 shadow-sm"
                                     >
-                                        125
+                                        {totalPages}
                                     </button>
                                 )}
                                 <button
@@ -601,11 +586,32 @@ const Users = ({ initialTab = "All" }) => {
                                     <input
                                         type="text"
                                         name="phone"
+                                        required
                                         value={formData.phone}
                                         onChange={handleInputChange}
                                         placeholder="+91 98765 43210"
                                         className="w-full bg-white border border-gray-200 text-slate-800 rounded-lg px-4 py-3 focus:outline-none focus:ring-1 focus:ring-[#4318FF] focus:border-[#4318FF] transition-all text-sm font-medium"
                                     />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <label className="block">
+                                        <span className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-gray-500">Role</span>
+                                        <select name="role" value={formData.role} onChange={handleInputChange} className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+                                            <option value="customer">Customer</option>
+                                            <option value="manager">Manager</option>
+                                            <option value="dealer">Dealer</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
+                                    </label>
+                                    {isEditing && (
+                                        <label className="block">
+                                            <span className="mb-2 block text-[11px] font-bold uppercase tracking-widest text-gray-500">Status</span>
+                                            <select name="status" value={formData.status} onChange={handleInputChange} className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm">
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
+                                        </label>
+                                    )}
                                 </div>
                                 {!isEditing && (
                                     <div>
