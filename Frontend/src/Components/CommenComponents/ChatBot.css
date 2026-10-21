@@ -16,10 +16,10 @@
 
 /* Panel */
 .chatbot-panel {
-  width: 400px;
+  width: 360px;
   max-width: calc(100vw - 2rem);
-  height: 620px;
-  max-height: calc(100vh - 6rem);
+  height: 560px;
+  max-height: calc(100dvh - 5rem);
   background: #ffffff;
   border-radius: 24px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18), 0 4px 20px rgba(0,0,0,0.08);
@@ -595,21 +595,24 @@
 
 /* ── Mobile ── */
 @media (max-width: 480px) {
-  .chatbot-overlay { padding: 0; }
+  .chatbot-overlay {
+    padding: 1rem;
+    align-items: flex-end;
+  }
   .chatbot-panel {
     width: 100%;
     max-width: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
-    border-radius: 0;
+    height: min(560px, calc(100dvh - 2rem));
+    max-height: calc(100dvh - 2rem);
+    border-radius: 20px;
   }
   .products-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Floating Action Button (FAB) ── */
 .chatbot-fab {
-  width: 58px;
-  height: 58px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
@@ -651,8 +654,7 @@
 /* Resize FAB slightly on mobile */
 @media (max-width: 480px) {
   .chatbot-fab {
-    width: 52px;
-    height: 52px;
+    width: 46px;
+    height: 46px;
   }
 }
-
