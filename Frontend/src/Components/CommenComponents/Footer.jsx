@@ -10,7 +10,9 @@ import {
   PhoneCall,
   Footprints,
   Star,
-  BriefcaseBusiness
+  BriefcaseBusiness,
+  Tag,
+  BadgePercent
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import PageContainer from "./PageContainer";
@@ -89,6 +91,26 @@ const Footer = () => {
 
               <li>
                 <Link
+                  to="/shop"
+                  className="flex items-center gap-2 hover:translate-x-1 transition"
+                >
+                  <Tag size={16} />
+                  Brands
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/shop"
+                  className="flex items-center gap-2 hover:translate-x-1 transition"
+                >
+                  <BadgePercent size={16} />
+                  Offers
+                </Link>
+              </li>
+
+              <li>
+                <Link
                   to="/contactus"
                   className="flex items-center gap-2 hover:translate-x-1 transition"
                 >
@@ -145,9 +167,9 @@ const Footer = () => {
                 support@mystore.com
               </p>
 
-              <p className="flex items-center gap-2 transition">
-                <MapPin size={16} />
-                Chennai, India
+              <p className="flex items-start gap-2 transition">
+                <MapPin size={16} className="mt-0.5 shrink-0" />
+                <span>123 Nethji Road, Ambur TK, Tirupathur District, 635802</span>
               </p>
 
             </div>
@@ -177,7 +199,7 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div>
-            <h2 className="relative mb-4 inline-block border-b border-white/30 pb-2 text-xl font-semibold after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-1/2 after:bg-yellow-400">Stay Connected</h2>
+            <h2 className="relative mb-4 inline-block border-b border-white/30 pb-2 text-xl font-semibold after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-1/2 after:bg-yellow-400">Step Into Updates</h2>
             <p className="text-sm opacity-90 leading-relaxed mb-4">
               Subscribe for new arrivals, exclusive offers, and footwear style updates.
             </p>
@@ -208,8 +230,18 @@ const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/30 py-4 text-center text-sm">
-          © {new Date().getFullYear()} Style Hub. All Rights Reserved.
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/30 py-4 text-center text-sm sm:flex-row">
+          <p>© {new Date().getFullYear()} Style Hub. All Rights Reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-2" aria-label="Accepted payment methods">
+            <span className="rounded bg-white px-2 py-1 text-xs font-black italic text-[#1A1F71]">VISA</span>
+            <span className="flex items-center rounded bg-white px-2 py-1" aria-label="Mastercard" title="Mastercard">
+              <span className="h-3 w-3 rounded-full bg-[#EB001B]" />
+              <span className="-ml-1 h-3 w-3 rounded-full bg-[#F79E1B]/90" />
+            </span>
+            <span className="rounded bg-white px-2 py-1 text-xs font-black italic text-[#294A9B]">RuPay</span>
+            <span className="rounded bg-white px-2 py-1 text-xs font-black text-[#176B57]">UPI</span>
+            <span className="rounded bg-white px-2 py-1 text-xs font-black italic text-[#0874C9]">Paytm</span>
+          </div>
         </div>
 
       </PageContainer>
