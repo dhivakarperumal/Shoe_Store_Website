@@ -142,6 +142,41 @@ async function initializeDatabase(pool) {
       INDEX products_status_idx (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      order_id VARCHAR(32) DEFAULT NULL,
+      user_id VARCHAR(255) DEFAULT NULL,
+      customer_name VARCHAR(191) NOT NULL,
+      customer_email VARCHAR(191) DEFAULT NULL,
+      customer_phone VARCHAR(32) NOT NULL,
+      street_address VARCHAR(500) DEFAULT NULL,
+      city VARCHAR(120) DEFAULT NULL,
+      district VARCHAR(120) DEFAULT NULL,
+      state VARCHAR(120) DEFAULT NULL,
+      country VARCHAR(120) DEFAULT NULL,
+      zip_code VARCHAR(20) DEFAULT NULL,
+      payment_method VARCHAR(64) NOT NULL DEFAULT 'Showroom',
+      payment_status VARCHAR(32) NOT NULL DEFAULT 'pending',
+      payment_id VARCHAR(191) DEFAULT NULL,
+      order_type VARCHAR(32) NOT NULL DEFAULT 'Online',
+      status VARCHAR(32) NOT NULL DEFAULT 'Order Placed',
+      total_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      items JSON NOT NULL,
+      tracking_number VARCHAR(191) DEFAULT NULL,
+      courier_name VARCHAR(191) DEFAULT NULL,
+      shipped_at DATETIME DEFAULT NULL,
+      cancellation_reason TEXT DEFAULT NULL,
+      cancelled_at DATETIME DEFAULT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY orders_order_id_unique (order_id),
+      INDEX orders_user_id_idx (user_id),
+      INDEX orders_created_at_idx (created_at),
+      INDEX orders_status_idx (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
 }
 
 module.exports = { createPool, initializeDatabase };

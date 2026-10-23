@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-function requireAdmin(request, response, next) {
+function requireAuthenticated(request, response, next) {
   const authorization = request.get("authorization") || "";
   const match = authorization.match(/^Bearer\s+(.+)$/i);
 
@@ -9,11 +9,7 @@ function requireAdmin(request, response, next) {
   }
 
   try {
-    const user = jwt.verify(match[1], process.env.JWT_SECRET);
-    if (user.role !== "admin") {
-      return response.status(403).json({ message: "Administrator access is required." });
-    }
-    request.user = user;
+    request.user = jwt.verify(match[1], process.env.JWT_SECRET);
     return next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
@@ -23,4 +19,16 @@ function requireAdmin(request, response, next) {
   }
 }
 
-module.exports = { requireAdmin };
+function requireAdmin(request, response, next) {
+  return requireAuthenticated(request, response, (error) => {
+    if (error) {
+      return next(error);
+    }
+    if (request.user.role !== "admin") {
+      return response.status(403).json({ message: "Administrator access is required." });
+    }
+    return next();
+  });
+}
+
+module.exports = { requireAdmin, requireAuthenticated };

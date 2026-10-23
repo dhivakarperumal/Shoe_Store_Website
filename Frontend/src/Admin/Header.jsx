@@ -312,7 +312,7 @@ const Header = ({ onMenuClick }) => {
     <header className="sticky top-0 z-30 
       bg-white
       border-b border-slate-200/60
-      shadow-[0_4px_30px_rgba(0,0,0,0.04)]">
+      shadow-sm">
 
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
 

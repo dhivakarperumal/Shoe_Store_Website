@@ -98,7 +98,7 @@ const Sidebar = ({ isOpen, onClose, collapsed, onToggleCollapse }) => {
     const fetchOrderCounts = async () => {
       try {
         const response = await api.get("/orders");
-        const orders = response.data.data || [];
+        const orders = Array.isArray(response.data) ? response.data : response.data.data || [];
 
         const counts = {
           all: orders.length,
