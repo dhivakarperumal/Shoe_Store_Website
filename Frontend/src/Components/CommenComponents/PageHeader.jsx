@@ -6,12 +6,17 @@ import PageContainer from "./PageContainer";
 
 const PageHeader = ({
   title,
+  subtitle,
   background,
   backgroundSize = "cover",
   backgroundPosition = "center",
   backgroundRepeat = "no-repeat",
   contentAlignment = "center",
   heightClassName = "h-[180px] sm:h-[200px] md:h-[210px] lg:h-[220px]",
+  overlayClassName = "",
+  titleClassName = "text-2xl sm:text-3xl md:text-4xl lg:text-5xl",
+  subtitleClassName = "text-sm sm:text-base md:text-lg",
+  breadcrumbClassName = "text-xs sm:text-sm md:text-base",
   actionLabel,
   actionTo = "/",
 }) => {
@@ -31,17 +36,22 @@ const PageHeader = ({
       }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0"></div>
+      <div className={`absolute inset-0 ${overlayClassName}`}></div>
 
       {/* Content */}
       <PageContainer className={`relative ${isLeftAligned ? "text-left" : "text-center"}`}>
 
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3">
+        <h1 className={`${titleClassName} mb-2 font-bold md:mb-3`}>
           {title}
         </h1>
+        {subtitle && (
+          <p className={`mb-3 max-w-2xl text-white/90 ${subtitleClassName}`}>
+            {subtitle}
+          </p>
+        )}
 
         {/* Breadcrumb */}
-        <div className={`flex items-center gap-2 text-xs sm:text-sm md:text-base ${isLeftAligned ? "justify-start" : "justify-center"}`}>
+        <div className={`flex items-center gap-2 ${breadcrumbClassName} ${isLeftAligned ? "justify-start" : "justify-center"}`}>
 
           <Link
             to="/"

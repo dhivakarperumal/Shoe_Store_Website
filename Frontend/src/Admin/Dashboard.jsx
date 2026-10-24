@@ -3,12 +3,15 @@ import { useAdmin } from "../PrivateRouter/AdminContext";
 import api from "../api";
 import { toast, Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import DashboardQuickActions from "./DashboardQuickActions";
 import {
     FiAlertTriangle,
     FiBox,
     FiDollarSign,
+    FiEye,
     FiShoppingBag,
     FiUsers,
+    FiX,
 } from "react-icons/fi";
 import { Doughnut, Line } from "react-chartjs-2";
 import {
@@ -50,6 +53,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(!dashboardData);
     const [loadError, setLoadError] = useState("");
     const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+    const [quickView, setQuickView] = useState(null);
 
     const fetchDashboardData = useCallback(async () => {
         try {
@@ -73,6 +77,15 @@ const Dashboard = () => {
     useEffect(() => {
         void Promise.resolve().then(fetchDashboardData);
     }, [fetchDashboardData]);
+
+    useEffect(() => {
+        if (!quickView) return undefined;
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") setQuickView(null);
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [quickView]);
 
     if (loading && !dashboardData) {
         return (
@@ -169,6 +182,10 @@ const Dashboard = () => {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
     };
+    const QuickViewIcon = quickView?.cardStyle.icon || FiBox;
+    const quickViewMonthLabel = selectedMonth
+        ? new Date(`${selectedMonth}-01T12:00:00`).toLocaleDateString("en-IN", { month: "long", year: "numeric" })
+        : "Selected month";
 
     const statIcons = {
         "Total Products": FiShoppingBag,
@@ -195,39 +212,127 @@ const Dashboard = () => {
                 </div>
             )}
 
-            <section aria-label="Store metrics" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <section aria-label="Store metrics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {stats.map((stat) => {
-                    const Icon = {
-                        "Total Sales": FiShoppingBag,
-                        "Total Orders": FiBox,
-                        "Total Customers": FiUsers,
-                        "Total Products": FiBox,
-                    }[stat.label] || statIcons[stat.label] || FiBox;
                     const cardStyle = {
-                        "Total Sales": { icon: "bg-orange-500", trend: "text-emerald-600" },
-                        "Total Orders": { icon: "bg-blue-600", trend: "text-emerald-600" },
-                        "Total Customers": { icon: "bg-emerald-600", trend: "text-emerald-600" },
-                        "Total Products": { icon: "bg-rose-600", trend: "text-emerald-600" },
-                    }[stat.label] || { icon: "bg-primary", trend: "text-emerald-600" };
+                        "Total Sales": { icon: FiDollarSign, accent: "#00d0a0", surface: "#10372f" },
+                        "Total Orders": { icon: FiShoppingBag, accent: "#ff9a24", surface: "#3a2818" },
+                        "Total Customers": { icon: FiUsers, accent: "#45a1ff", surface: "#172e49" },
+                        "Total Products": { icon: FiBox, accent: "#ff5c9c", surface: "#3b2033" },
+                    }[stat.label] || {
+                        icon: statIcons[stat.label] || FiBox,
+                        accent: "#e8b64b",
+                        surface: "#332a1b",
+                    };
+                    const Icon = cardStyle.icon;
                     const trend = Number(stat.trend) || 0;
                     return (
-                        <article key={stat.label} className="flex min-h-[88px] items-center gap-4 rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md">
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-white ${cardStyle.icon}`}>
-                                {stat.label === "Total Sales" ? <FiDollarSign size={22} /> : <Icon size={22} />}
+                        <article
+                            key={stat.label}
+                            className="relative flex min-h-[160px] flex-col justify-between overflow-hidden rounded-md border border-slate-700/80 p-5 shadow-[0_8px_24px_rgba(15,23,42,0.14)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.24)]"
+                            style={{ background: `linear-gradient(135deg, ${cardStyle.surface} 0%, #111827 100%)` }}
+                        >
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-300">{stat.label}</p>
+                                    <p className="mt-4 truncate text-4xl font-black leading-none tracking-tight text-white">
+                                        {stat.label === "Total Sales" ? `₹${Number(stat.value || 0).toLocaleString("en-IN")}` : Number(stat.value || 0).toLocaleString("en-IN")}
+                                    </p>
+                                </div>
+                                <div
+                                    className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-md text-white shadow-lg"
+                                    style={{ backgroundColor: cardStyle.accent, boxShadow: `0 8px 18px ${cardStyle.accent}35` }}
+                                >
+                                    <Icon size={27} strokeWidth={2.5} />
+                                </div>
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-xs font-semibold text-slate-500">{stat.label}</p>
-                                <p className="mt-0.5 truncate text-xl font-black leading-tight text-slate-900">
-                                    {stat.label === "Total Sales" ? `₹${Number(stat.value || 0).toLocaleString("en-IN")}` : Number(stat.value || 0).toLocaleString("en-IN")}
+                            <div className="flex items-center justify-between gap-3 border-t border-slate-600/70 pt-3">
+                                <p className="flex min-w-0 items-center gap-2 text-xs text-slate-300">
+                                    <span
+                                        className={`shrink-0 rounded-full border px-2 py-0.5 font-bold ${trend < 0 ? "border-red-200 bg-red-50 text-red-600" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}
+                                    >
+                                        {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}%
+                                    </span>
+                                    <span className="truncate">vs last month</span>
                                 </p>
-                                <p className={`mt-1 text-[10px] font-semibold ${trend < 0 ? "text-red-600" : cardStyle.trend}`}>
-                                    {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}% <span className="font-normal text-slate-500">vs last month</span>
-                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setQuickView({ stat, cardStyle })}
+                                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-bold text-white/90 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                                >
+                                    <FiEye size={14} style={{ color: cardStyle.accent }} />
+                                    Quick view
+                                </button>
                             </div>
                         </article>
                     );
                 })}
             </section>
+
+            <DashboardQuickActions />
+
+            {quickView && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm"
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) setQuickView(null);
+                    }}
+                >
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="metric-quick-view-title"
+                        className="relative w-full max-w-md overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl"
+                    >
+                        <div className="h-1.5 w-full" style={{ backgroundColor: quickView.cardStyle.accent }} />
+                        <div className="p-6 sm:p-7">
+                            <button
+                                type="button"
+                                onClick={() => setQuickView(null)}
+                                aria-label="Close quick view"
+                                className="absolute right-4 top-4 rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                            >
+                                <FiX size={18} />
+                            </button>
+                            <div className="flex items-center gap-3 pr-8">
+                                <span
+                                    className="flex h-11 w-11 items-center justify-center rounded-md text-white shadow-md"
+                                    style={{ backgroundColor: quickView.cardStyle.accent }}
+                                >
+                                    <QuickViewIcon size={22} />
+                                </span>
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Metric quick view</p>
+                                    <h2 id="metric-quick-view-title" className="mt-0.5 text-lg font-extrabold text-secondary">
+                                        {quickView.stat.label}
+                                    </h2>
+                                </div>
+                            </div>
+                            <p className="mt-6 text-4xl font-black tracking-tight text-secondary">
+                                {quickView.stat.label === "Total Sales"
+                                    ? `₹${Number(quickView.stat.value || 0).toLocaleString("en-IN")}`
+                                    : Number(quickView.stat.value || 0).toLocaleString("en-IN")}
+                            </p>
+                            <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                                {{
+                                    "Total Sales": "Lifetime sales recorded across store orders.",
+                                    "Total Orders": "Total customer and showroom orders recorded.",
+                                    "Total Customers": "Total customer accounts registered with your store.",
+                                    "Total Products": "Products currently listed in your store catalog.",
+                                }[quickView.stat.label] || "Current store metric overview."}
+                            </p>
+                            <div className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                                <span className="text-sm font-semibold text-slate-600">
+                                    {quickViewMonthLabel} vs previous month
+                                </span>
+                                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${Number(quickView.stat.trend) < 0 ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"}`}>
+                                    {Number(quickView.stat.trend) < 0 ? "↓" : "↑"} {Math.abs(Number(quickView.stat.trend) || 0)}%
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
 
             <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
                 <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:col-span-7">
