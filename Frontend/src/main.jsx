@@ -15,6 +15,7 @@ import Loader from "./Components/CommenComponents/Loader.jsx";
 const Home = React.lazy(() => import("./Components/Home/Home.jsx"));
 const AboutUs = React.lazy(() => import("./Components/About/AboutUs.jsx"));
 const ShopPage = React.lazy(() => import("./Components/Pages/AllProducts.jsx"));
+const ProductDetailsPage = React.lazy(() => import("./Components/Products/ProductDetails.jsx"));
 
 const Login = React.lazy(() => import("./Components/Auth/Login.jsx"));
 const Register = React.lazy(() => import("./Components/Auth/Register.jsx"));
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "about", element: <AboutUs /> },
       { path: "shop", element: <ShopPage /> },
+      { path: "products/:id", element: <ProductDetailsPage /> },
 
     ],
   },

@@ -1,11 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { FaStar, FaShareAlt, FaPlus, FaMinus, FaHeart, FaChevronRight, FaChevronLeft } from "react-icons/fa";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { FaStar } from "react-icons/fa";
 import toast from "react-hot-toast";
 
 import api from "../../api";
@@ -16,9 +11,18 @@ import {
   FiShoppingCart,
   FiChevronDown,
   FiChevronUp,
+  FiTruck,
+  FiRotateCcw,
+  FiShield,
+  FiCreditCard,
+  FiCheck,
+  FiCheckCircle,
+  FiPackage,
+  FiArrowRight,
 } from "react-icons/fi";
 import RelatedProducts from "./RelatedProducts";
 import PageHeader from "../CommenComponents/PageHeader";
+import PageContainer from "../CommenComponents/PageContainer";
 import { useAuth } from "../../PrivateRouter/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -26,14 +30,13 @@ const ProductDetails = () => {
   const { addToCart, toggleWishlist, wishlist } = useContext(StoreContext);
 
   const { id } = useParams();
-  console.log("Current Product ID:", id);
   const { user } = useAuth();
-  console.log("Logged User:", user);
   const navigate = useNavigate();
 
 
 
   const [product, setProduct] = useState(null);
+  const [productError, setProductError] = useState("");
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -50,6 +53,7 @@ const ProductDetails = () => {
   const [reviews, setReviews] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [showDetails, setShowDetails] = useState(true);
+  const [activeInfoTab, setActiveInfoTab] = useState("details");
   const [reviewStats, setReviewStats] = useState({
     total_reviews: 0,
     average_rating: 0,
@@ -60,10 +64,6 @@ const ProductDetails = () => {
     one_star: 0,
   });
   const [loadingReviews, setLoadingReviews] = useState(false);
-
-  useEffect(() => {
-    console.log("Component Mounted for Product:", id);
-  }, [id]);
 
   const [zoomed, setZoomed] = useState(false);
   const [backgroundPosition, setBackgroundPosition] = useState("50% 50%");
@@ -115,6 +115,8 @@ const ProductDetails = () => {
 
   const fetchProduct = async () => {
     try {
+      setProductError("");
+      setProduct(null);
       const res = await api.get(`/products/${id}`);
       const data = res.data;
       if (!data) throw new Error("Product data not found");
@@ -136,6 +138,7 @@ const ProductDetails = () => {
       setSelectedSize(firstVariant?.selectedSizes?.[0] || null);
     } catch (error) {
       console.error(error);
+      setProductError(error.response?.data?.message || "Unable to load this product.");
     }
   };
 
@@ -303,6 +306,13 @@ const ProductDetails = () => {
   if (!product)
     return (
       <>
+        {productError ? (
+          <div className="mx-auto flex min-h-[45vh] max-w-3xl flex-col items-center justify-center px-5 text-center">
+            <h1 className="text-2xl font-bold text-secondary">Product unavailable</h1>
+            <p role="alert" className="mt-2 text-sm text-slate-500">{productError}</p>
+            <button type="button" onClick={() => navigate("/shop")} className="mt-5 bg-[#ff4b0b] px-5 py-2.5 text-sm font-bold text-white">Back to shop</button>
+          </div>
+        ) : <>
         <PageHeader title="Loading..." />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 grid lg:grid-cols-2 gap-8 lg:gap-12 animate-pulse">
@@ -346,6 +356,7 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
+        </>}
       </>
     );
 
@@ -358,28 +369,39 @@ const ProductDetails = () => {
 
   return (
     <>
-      <PageHeader title={product.name} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 grid lg:grid-cols-[0.88fr_1.12fr] gap-8 lg:gap-12">
+      <PageHeader
+        title={product.category || "Shop"}
+        subtitle={product.description || "Step into comfort and style"}
+        background="/images/pageheader1.png"
+        backgroundPosition="center 54%"
+        contentAlignment="left"
+        heightClassName="h-[105px] sm:h-[120px] md:h-[135px]"
+        titleClassName="text-xl sm:text-2xl"
+        subtitleClassName="text-xs sm:text-sm"
+        breadcrumbClassName="text-[9px] sm:text-[10px]"
+        overlayClassName="bg-gradient-to-r from-black/70 via-black/35 to-transparent"
+      />
+      <PageContainer className="grid gap-5 py-5 sm:gap-7 sm:py-7 lg:grid-cols-[.9fr_1fr] xl:grid-cols-[.9fr_1fr_210px]">
         {/* LEFT SIDE IMAGES */}
-        <div className="lg:h-fit lg:sticky lg:top-24">
+          <div className="min-w-0 lg:h-fit lg:sticky lg:top-24">
           {/* Main Image */}
           <div
-            className="relative group w-full max-w-[560px] mx-auto h-[320px] sm:h-[420px] lg:h-[480px] bg-gray-100 rounded-3xl shadow-sm"
+            className="relative group w-full mx-auto h-[300px] sm:h-[360px] lg:h-[350px] bg-[#f6f4f1] border border-slate-100 shadow-sm"
             onMouseEnter={() => setZoomed(true)}
             onMouseLeave={() => setZoomed(false)}
             onMouseMove={handleMouseMove}
           >
-            <div className="w-full h-full rounded-3xl overflow-hidden">
+            <div className="w-full h-full overflow-hidden">
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-110"
+                className="w-full h-full object-cover object-[60%_center] transition-transform duration-500 ease-out group-hover:scale-105"
               />
             </div>
 
             {zoomed && (
               <div
-                className="pointer-events-none absolute top-0 left-full ml-4 w-[520px] h-[480px] border border-gray-200 rounded-2xl overflow-hidden z-50 hidden lg:block bg-white shadow-lg"
+                className="pointer-events-none absolute top-0 left-full ml-4 w-[420px] h-[350px] border border-gray-200 overflow-hidden z-50 hidden lg:block bg-white shadow-lg"
                 style={{
                   backgroundImage: `url(${selectedImage})`,
                   backgroundRepeat: "no-repeat",
@@ -390,35 +412,38 @@ const ProductDetails = () => {
             )}
           </div>
           {/* Thumbnails */}
-          <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4 flex-wrap">
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
             {displayImages.map((img, index) => (
-              <img
+              <button
                 key={index}
-                src={img}
-                onClick={() => setSelectedImage(resolveImageUrl(img))}
-                className={`w-14 h-14 sm:w-18 sm:h-20 sm:h-16 object-cover object-top rounded-lg cursor-pointer border ${selectedImage === img ? "border-primary" : "border-gray-200"
-                  }`}
-              />
+                type="button"
+                onClick={() => setSelectedImage(img)}
+                aria-label={`View product image ${index + 1}`}
+                className={`h-14 w-14 shrink-0 overflow-hidden border bg-white ${selectedImage === img ? "border-[#ff4b0b] ring-1 ring-[#ff4b0b]" : "border-slate-200"}`}
+              >
+                <img src={img} alt="" className="h-full w-full object-cover object-[60%_center]" />
+              </button>
             ))}
           </div>
         </div>
 
         {/* RIGHT SIDE DETAILS */}
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary-dark">
+        <div className="min-w-0">
+          <span className="inline-flex bg-[#ff4b0b] px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-white">{product.subcategory || product.category}</span>
+          <h1 className="mt-2 text-xl font-extrabold leading-tight text-slate-900 sm:text-2xl">
             {product.name}
           </h1>
 
           {reviewStats.total_reviews > 0 && (
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex text-yellow-400">
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex text-[#ff4b0b]">
                 {[...Array(5)].map((_, i) => (
                   <FaStar
                     key={i}
                     size={14}
                     className={
                       i < Math.round(reviewStats.average_rating)
-                        ? "text-yellow-400"
+                        ? "text-[#ff4b0b]"
                         : "text-gray-200"
                     }
                   />
@@ -430,80 +455,60 @@ const ProductDetails = () => {
             </div>
           )}
 
-          <p className="text-muted mt-2">{product.description}</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">{product.description}</p>
 
-          <div className="mt-4 space-y-1 text-sm text-gray-600">
-            {product.category && (
-              <p>
-                <span className="font-semibold">Category:</span>{" "}
-                {product.category}
-              </p>
-            )}
-
-            {product.subcategory && (
-              <p>
-                <span className="font-semibold">Sub Category:</span>{" "}
-                {product.subcategory}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3 mt-4">
-            <span className="text-2xl sm:text-3xl font-bold text-primary">
-              ₹{product.offer_price}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-2xl font-black text-[#f04b0b]">
+              ₹{Number(product.offer_price || product.price || 0).toLocaleString("en-IN")}
             </span>
 
-            {product.mrp && (
-              <span className="text-gray-400 line-through text-lg">
-                ₹{product.mrp}
+            {product.mrp && Number(product.mrp) > Number(product.offer_price) && (
+              <span className="text-sm text-gray-400 line-through">
+                ₹{Number(product.mrp).toLocaleString("en-IN")}
               </span>
             )}
 
-            {product.offer && (
-              <span className="bg-primary/10 text-primary text-sm px-2 py-1 rounded">
+            {Number(product.offer) > 0 && (
+              <span className="bg-[#ff4b0b] px-2 py-1 text-[10px] font-bold text-white">
                 {Math.floor(product.offer)}% OFF
               </span>
             )}
           </div>
+          <p className="mt-0.5 text-[10px] text-slate-500">Inclusive of all taxes</p>
 
-          <div className="mt-6">
-            <p className="font-semibold mb-3">Color</p>
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-bold text-slate-800">Color: {getVariantColorName(selectedVariant)}</p>
 
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {product?.variants?.map((variant, index) => (
-                <div
+                <button
                   key={index}
+                  type="button"
+                  aria-label={`Select ${getVariantColorName(variant)} color`}
                   onClick={() => {
                     setSelectedVariant(variant);
-                    setSelectedImage(resolveImageUrl(variant.images?.[0]));
+                    setSelectedImage(variant.images?.[0] || product.images?.[0] || null);
                     setSelectedSize(variant.selectedSizes?.[0] || null);
                     setQuantity(1);
                   }}
-                  className="flex flex-col items-center cursor-pointer"
+                  className={`flex h-11 w-11 items-center justify-center overflow-hidden border bg-white ${selectedVariant === variant ? "border-[#ff4b0b] ring-1 ring-[#ff4b0b]" : "border-slate-200"}`}
                 >
-                  {/* variant image */}
-                  <img
-                    src={resolveImageUrl(variant.images?.[0]) || product.images?.[0]}
-                    alt={getVariantColorName(variant)}
-                    className={`w-16 h-16 object-cover object-top rounded-full border-2 ${selectedVariant === variant
-                      ? "border-primary"
-                      : "border-gray-200"
-                      }`}
-                  />
-
-                  {/* color name */}
-                  <span className="text-xs mt-1">{getVariantColorName(variant)}</span>
-                </div>
+                  {variant.images?.[0] ? (
+                    <img src={variant.images[0]} alt="" className="h-full w-full object-cover object-[60%_center]" />
+                  ) : (
+                    <span className="h-6 w-6 rounded-full border border-slate-200" style={{ backgroundColor: variant.color || "#fff" }} />
+                  )}
+                </button>
               ))}
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4">
             {!isSareeCategory && !(selectedVariant?.selectedSizes?.length === 1 && selectedVariant?.selectedSizes[0].toLowerCase() === "free size") && (
               <>
-                <p className="font-semibold mb-3">Sizes</p>
+                <p className="mb-2 text-xs font-bold">Size</p>
 
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-1.5 flex-wrap">
                   {selectedVariant?.selectedSizes?.map((size, index) => {
                     return (
                       <button
@@ -512,10 +517,10 @@ const ProductDetails = () => {
                           setSelectedSize(size);
                           setQuantity(1);
                         }}
-                        className={`px-4 py-2 rounded-lg border text-sm font-semibold transition
+                        className={`min-w-9 border px-2.5 py-1.5 text-xs font-semibold transition
               ${selectedSize === size
-                            ? "bg-primary text-white border-primary"
-                            : "border-gray-300 hover:border-primary"
+                            ? "border-[#ff4b0b] bg-[#ff4b0b] text-white"
+                            : "border-gray-300 hover:border-[#ff4b0b]"
                           }`}
                       >
                         {size}
@@ -527,17 +532,17 @@ const ProductDetails = () => {
             )}
 
             {!isSareeCategory && selectedSize && (
-              <p className="text-sm text-gray-600 mt-3">
-                Stock Available:{" "}
-                <span className="font-semibold">
+              <p className="mt-2 text-[10px] text-gray-600">
+                Stock available:{" "}
+                <span className="font-semibold text-emerald-700">
                   {availableStock}
                 </span>
               </p>
             )}
 
             {/* QUANTITY SELECTOR */}
-            <div className="mt-6">
-              <p className="font-semibold mb-2">Quantity</p>
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-semibold">Quantity</p>
 
               <div className="flex items-center border border-gray-200 rounded-lg w-fit overflow-hidden">
                 <button
@@ -564,14 +569,14 @@ const ProductDetails = () => {
 
 
             {/* ACTION BUTTONS */}
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
 
             <button
               onClick={() =>
                 addToCart(product, selectedVariant, selectedSize, quantity)
               }
               disabled={isOutOfStock}
-              className="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-lg disabled:cursor-not-allowed disabled:bg-gray-300"
+              className="flex-1 cursor-pointer flex items-center justify-center gap-2 bg-[#ff4b0b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#dc3e08] disabled:cursor-not-allowed disabled:bg-gray-300"
             >
               <FiShoppingCart size={18} />
               {isOutOfStock ? "Out of Stock" : "Add to Cart"}
@@ -580,15 +585,16 @@ const ProductDetails = () => {
             <button
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              className="flex-1 cursor-pointer bg-black text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-900 disabled:cursor-not-allowed disabled:bg-gray-300"
+              className="flex-1 cursor-pointer border border-slate-900 bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-300"
             >
               {isOutOfStock ? "Out of Stock" : "Buy Now"}
             </button>
 
             <button
               onClick={() => toggleWishlist(product, selectedVariant)}
-              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 transition active:scale-95 font-semibold ${wishlist.some((w) => w.product_id === product.id)
-                ? "bg-rose-50 border-rose-300 text-rose-500"
+              aria-label="Add to wishlist"
+              className={`flex items-center justify-center border px-4 py-2.5 transition active:scale-95 ${wishlist.some((w) => w.product_id === product.id)
+                ? "border-rose-300 bg-rose-50 text-rose-500"
                 : "border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"
                 }`}
             >
@@ -610,9 +616,9 @@ const ProductDetails = () => {
 
           {/* PRODUCT DETAILS */}
           {/* PRODUCT DETAILS */}
-          <div className="mt-10 bg-gray-50 border border-gray-100 rounded-2xl p-6">
+          <div className="hidden">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-primary-dark">
+              <h3 className="text-sm font-bold text-slate-900">
                 Product Details
               </h3>
 
@@ -770,15 +776,188 @@ const ProductDetails = () => {
 
         
         </div>
-      </div>
-      <RelatedProducts
-        category={product?.category}
-        currentProductId={product?.id}
-      />
+
+        <aside className="min-w-0 lg:col-span-2 xl:col-span-1">
+          <div className="space-y-3 xl:sticky xl:top-24">
+            <section aria-label="Shopping services" className="bg-[#fffaf6] px-4">
+              {[
+                [FiTruck, "Free Shipping", "On Orders Above ₹999"],
+                [FiPackage, "Easy Returns", "Hassle Free Returns"],
+                [FiShield, "100% Original", "Genuine Leather Products"],
+                [FiCreditCard, "Cash on Delivery", "Available"],
+              ].map(([Icon, title, description], index) => (
+                <div key={title} className={`flex min-h-[64px] items-center gap-3 ${index < 3 ? "border-b border-[#f0e4dc]" : ""}`}>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ffeddf] text-[#ff4b0b]">
+                    <Icon size={19} />
+                  </span>
+                  <div>
+                    <h2 className="text-xs font-extrabold text-slate-900">{title}</h2>
+                    <p className="mt-0.5 text-[11px] text-slate-600">{description}</p>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section aria-label="StyleHub promise" className="bg-[#fffaf6] p-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ff4b0b] text-white">
+                  <FiCheckCircle size={19} />
+                </span>
+                <h2 className="text-xs font-extrabold text-slate-900">StyleHub Promise</h2>
+              </div>
+              <ul className="mt-3 space-y-2 pl-1">
+                {["Premium Quality", "Comfort Fit", "Durable & Long Lasting", "Stylish Design", "Trusted by Thousands"].map((promise) => (
+                  <li key={promise} className="flex items-center gap-2.5 text-xs text-slate-600">
+                    <FiCheck className="shrink-0 text-[#ff4b0b]" size={15} />
+                    {promise}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+        </aside>
+      </PageContainer>
+      <PageContainer className="pt-2">
+        <section aria-label="Product benefits" className="grid grid-cols-2 gap-px border border-[#f5e8df] bg-[#f5e8df] sm:grid-cols-3 xl:grid-cols-5">
+          {[
+            ["Quality materials", "Selected for lasting wear"],
+            ["Comfort first", "Made for everyday comfort"],
+            ["Built to last", "Made for regular use"],
+            ["Thoughtful design", "Style for every occasion"],
+            ["Easy to wear", "A fit for your routine"],
+          ].map(([title, description]) => (
+            <div key={title} className="flex min-h-[68px] items-center gap-2.5 bg-[#fffaf6] px-3 py-3 sm:px-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#fff0e6] text-[#ff4b0b]">
+                <FiCheck size={17} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[11px] font-extrabold text-slate-900">{title}</p>
+                <p className="mt-0.5 text-[10px] text-slate-500">{description}</p>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+          <section className="min-w-0 overflow-hidden border border-slate-200 bg-white" aria-label="Product information">
+            <div role="tablist" aria-label="Product information tabs" className="flex overflow-x-auto border-b border-slate-100">
+              {[
+                ["details", "Product Details"],
+                ["specifications", "Specifications"],
+                ["size", "Size Guide"],
+                ["shipping", "Shipping & Returns"],
+                ["reviews", `Reviews (${reviewStats.total_reviews})`],
+              ].map(([tab, label]) => (
+                <button
+                  key={tab}
+                  id={`product-tab-${tab}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeInfoTab === tab}
+                  aria-controls="product-information-panel"
+                  onClick={() => setActiveInfoTab(tab)}
+                  className={`shrink-0 border-b-2 px-4 py-3 text-[11px] font-bold transition sm:px-5 ${activeInfoTab === tab ? "border-[#ff4b0b] text-[#ff4b0b]" : "border-transparent text-slate-500 hover:text-slate-900"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div
+              id="product-information-panel"
+              role="tabpanel"
+              aria-labelledby={`product-tab-${activeInfoTab}`}
+              className="grid gap-5 p-4 sm:grid-cols-[minmax(0,1fr)_190px] sm:p-5"
+            >
+              <div>
+                {activeInfoTab === "details" && (
+                  <>
+                    <h2 className="text-base font-extrabold text-slate-900">Product Details</h2>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-600">{product.description || "Thoughtfully selected for quality, comfort, and everyday style."}</p>
+                    <ul className="mt-3 space-y-1.5">
+                      {[
+                        product.material && ["Material", product.material],
+                        product.brand && ["Brand", product.brand],
+                        product.color && ["Color", product.color],
+                        product.wash_care && ["Care instructions", product.wash_care],
+                        product.subcategory && ["Style", product.subcategory],
+                      ].filter(Boolean).map(([label, value]) => (
+                        <li key={label} className="flex items-start gap-2 text-[11px] leading-relaxed text-slate-600">
+                          <FiCheck className="mt-0.5 shrink-0 text-[#ff4b0b]" size={14} />
+                          <span><strong className="text-slate-800">{label}:</strong> {value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {activeInfoTab === "specifications" && (
+                  <>
+                    <h2 className="text-base font-extrabold text-slate-900">Specifications</h2>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+                      {[
+                        ["Category", product.category],
+                        ["Subcategory", product.subcategory],
+                        ["Brand", product.brand],
+                        ["Material", product.material],
+                        ["Color", getVariantColorName(selectedVariant)],
+                        ["Product code", product.product_code],
+                      ].filter(([, value]) => value).map(([label, value]) => (
+                        <div key={label} className="border-b border-slate-100 pb-2">
+                          <dt className="text-slate-500">{label}</dt>
+                          <dd className="mt-0.5 font-semibold text-slate-800">{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                )}
+                {activeInfoTab === "size" && (
+                  <>
+                    <h2 className="text-base font-extrabold text-slate-900">Size Guide</h2>
+                    <p className="mt-2 text-xs leading-relaxed text-slate-600">Available sizes for the selected option:</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(selectedVariant?.selectedSizes || []).map((size) => (
+                        <span key={size} className="border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">{size}</span>
+                      ))}
+                      {!selectedVariant?.selectedSizes?.length && <span className="text-xs text-slate-500">Refer to the available size options above.</span>}
+                    </div>
+                  </>
+                )}
+                {activeInfoTab === "shipping" && (
+                  <>
+                    <h2 className="text-base font-extrabold text-slate-900">Shipping & Returns</h2>
+                    <ul className="mt-3 space-y-2 text-xs leading-relaxed text-slate-600">
+                      <li className="flex gap-2"><FiTruck className="mt-0.5 shrink-0 text-[#ff4b0b]" /> Delivery availability and charges are confirmed during checkout.</li>
+                      <li className="flex gap-2"><FiRotateCcw className="mt-0.5 shrink-0 text-[#ff4b0b]" /> Return eligibility and timelines follow the store return policy.</li>
+                      <li className="flex gap-2"><FiShield className="mt-0.5 shrink-0 text-[#ff4b0b]" /> Please keep the product and packaging in original condition for eligible returns.</li>
+                    </ul>
+                  </>
+                )}
+                {activeInfoTab === "reviews" && (
+                  <>
+                    <h2 className="text-base font-extrabold text-slate-900">Customer Reviews</h2>
+                    <p className="mt-2 text-xs text-slate-600">{reviewStats.total_reviews ? `${reviewStats.average_rating} out of 5 from ${reviewStats.total_reviews} reviews` : "No reviews have been added yet."}</p>
+                    <button type="button" onClick={() => document.getElementById("customer-reviews")?.scrollIntoView({ behavior: "smooth" })} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#ff4b0b] hover:underline">
+                      View reviews <FiArrowRight size={13} />
+                    </button>
+                  </>
+                )}
+              </div>
+              {displayImages[0] && (
+                <img src={displayImages[0]} alt={`${product.name} product view`} className="hidden h-[190px] w-full border border-slate-100 object-cover sm:block" />
+              )}
+            </div>
+          </section>
+          <RelatedProducts
+            category={product.category}
+            currentProductId={product.id}
+            compact
+          />
+        </div>
+      </PageContainer>
 
       {/* REVIEW SECTION */}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 mt-20">
+      <div id="customer-reviews" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 mt-12">
         {/* HEADER */}
 
         <div className="flex items-center justify-between border-t border-gray-200 pt-10 mb-6">
@@ -959,20 +1138,9 @@ const ProductDetails = () => {
                 ))}
               </div>
             ) : reviews.length > 0 ? (
-              <Swiper
-                modules={[Pagination, Navigation, Autoplay]}
-                spaceBetween={20}
-                slidesPerView={1}
-                breakpoints={{
-                  768: { slidesPerView: 2 },
-                  1024: { slidesPerView: 2 }
-                }}
-                autoplay={{ delay: 3000 }}
-                className="review-swiper pb-12"
-              >
+              <div className="grid gap-4 md:grid-cols-2">
                 {reviews.map((review) => (
-                  <SwiperSlide key={review.id}>
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
+                    <article key={review.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h4 className="font-bold text-gray-800 text-lg">
@@ -1021,10 +1189,9 @@ const ProductDetails = () => {
                           </p>
                         </div>
                       )}
-                    </div>
-                  </SwiperSlide>
+                    </article>
                 ))}
-              </Swiper>
+              </div>
             ) : (
               <div className="text-center py-10 bg-gray-50 rounded-2xl">
                 <p className="text-gray-500 font-medium">
