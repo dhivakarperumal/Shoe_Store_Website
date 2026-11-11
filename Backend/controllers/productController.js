@@ -17,7 +17,8 @@ function validateProduct(body) {
   const subcategory = text("subcategory", 120);
   const brand = text("brand", 120);
   const material = text("material", 120);
-  for (const field of [productCode, name, category, description, subcategory, brand, material]) {
+  const sizeChart = text("size_chart", 500);
+  for (const field of [productCode, name, category, description, subcategory, brand, material, sizeChart]) {
     if (field.error) return field;
   }
 
@@ -98,6 +99,7 @@ function validateProduct(body) {
       subcategory: subcategory.value,
       brand: brand.value,
       material: material.value,
+      size_chart: sizeChart.value,
       mrp: mrp.value,
       offer: offer.value,
       offer_price: expectedPrice,

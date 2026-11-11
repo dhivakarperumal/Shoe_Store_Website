@@ -12,6 +12,13 @@ import PageContainer from "../CommenComponents/PageContainer";
 import PageHeader from "../CommenComponents/PageHeader";
 
 const AGE_GROUPS = ["All", "Infant (0–1)", "Toddler (1–3)", "Kids (3–5)", "Kids (5–7)", "Kids (7–10)", "Teen (10–15)", "Teen (15–20)", "Adult (20+)"];
+const DEFAULT_SHOP_CATEGORIES = [
+    { name: "Sneakers", image: "" },
+    { name: "Running Shoes", image: "" },
+    { name: "Formal Shoes", image: "" },
+    { name: "Sandals", image: "" },
+    { name: "Sports Shoes", image: "" },
+];
 const backendUrl = (import.meta.env.VITE_BACKEND_URL || "http://localhost:5000").replace(/\/$/, "");
 const pageLoadTimestamp = Date.now();
 const resolveImageUrl = (image) => {
@@ -45,7 +52,9 @@ const AllProducts = () => {
     const [priceLimit, setPriceLimit] = useState(null);
     const [viewMode, setViewMode] = useState("grid");
     const [promoBanners, setPromoBanners] = useState([]);
-    const [browseCategories, setBrowseCategories] = useState(Array.isArray(categoriesCache) ? categoriesCache : []);
+    const [browseCategories, setBrowseCategories] = useState(
+        Array.isArray(categoriesCache) && categoriesCache.length ? categoriesCache : DEFAULT_SHOP_CATEGORIES
+    );
     const [openFilters, setOpenFilters] = useState({ category: true, price: true, brand: true, size: true, color: true, material: true });
     const [showQR, setShowQR] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -103,11 +112,14 @@ const AllProducts = () => {
                         name: category.name,
                         image: resolveImageUrl(firstImage(category.images)),
                     }));
-                setBrowseCategories(categories);
-                setCategoriesCache(categories);
+                const fallbackCategories = categories.length ? categories : DEFAULT_SHOP_CATEGORIES;
+                setBrowseCategories(fallbackCategories);
+                setCategoriesCache(fallbackCategories);
             })
             .catch((error) => {
                 console.error("Error fetching shop categories:", error);
+                setBrowseCategories(DEFAULT_SHOP_CATEGORIES);
+                setCategoriesCache(DEFAULT_SHOP_CATEGORIES);
             });
         return () => { active = false; };
     }, [categoriesCache, setCategoriesCache]);
@@ -137,7 +149,9 @@ const AllProducts = () => {
     };
 
     const productCategories = [...new Set(products.map((product) => product.category).filter(Boolean))];
-    const shopCategories = browseCategories.length ? browseCategories.map((category) => category.name) : productCategories;
+    const shopCategories = [...new Set(
+        (browseCategories.length ? browseCategories.map((category) => category.name) : [...DEFAULT_SHOP_CATEGORIES.map((category) => category.name), ...productCategories])
+    )];
     const brands = [...new Set(products.map((product) => product.brand).filter(Boolean))];
     const sizes = [...new Set(products.flatMap((product) => product.variants?.flatMap((variant) => variant.selectedSizes || []) || []))];
     const colors = [...new Map(products.flatMap((product) => product.variants || [])

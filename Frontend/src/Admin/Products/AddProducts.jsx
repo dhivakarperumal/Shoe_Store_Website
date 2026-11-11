@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiArrowLeft, FiPlus, FiSave, FiStar, FiTrash2, FiUploadCloud } from "react-icons/fi";
+import { FiArrowLeft, FiPlus, FiSave, FiStar, FiTrash2, FiUploadCloud, FiX } from "react-icons/fi";
 import { FaRupeeSign } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import api from "../../api";
@@ -61,6 +61,8 @@ const AddProducts = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [uploadingSizeChart, setUploadingSizeChart] = useState(false);
+    const [sizeChart, setSizeChart] = useState("");
     const [fetching, setFetching] = useState(isEdit);
     const [customSizes, setCustomSizes] = useState([]);
     const [form, setForm] = useState({
@@ -136,6 +138,7 @@ const AddProducts = () => {
                         rating: String(product.rating ?? 5),
                         status: product.status || "Active",
                     });
+                    setSizeChart(product.size_chart || "");
                     setVariants(Array.isArray(product.variants) && product.variants.length
                         ? product.variants.map((variant) => ({
                             ...createVariant(),
@@ -228,6 +231,40 @@ const AddProducts = () => {
         }
     };
 
+    const uploadSizeChart = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+        if (!allowedTypes.includes(file.type)) {
+            toast.error("Choose a JPG, PNG, WEBP, or GIF size chart.");
+            event.target.value = "";
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Size chart must be 5 MB or smaller.");
+            event.target.value = "";
+            return;
+        }
+
+        const payload = new FormData();
+        payload.append("images", file);
+        setUploadingSizeChart(true);
+        try {
+            const { data } = await api.post("/products/upload", payload);
+            if (typeof data.images?.[0] !== "string") {
+                throw new Error("The size chart upload response was incomplete.");
+            }
+            setSizeChart(data.images[0]);
+            toast.success("Size chart uploaded.");
+        } catch (error) {
+            console.error("Size chart upload failed:", error);
+            toast.error(error.response?.data?.message || "Size chart upload failed.");
+        } finally {
+            setUploadingSizeChart(false);
+            event.target.value = "";
+        }
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         if (!form.name.trim() || !form.product_code.trim() || !form.category || !Number(form.mrp)) {
@@ -247,6 +284,7 @@ const AddProducts = () => {
             offer_price: Number(sellingPrice),
             rating: Number(form.rating),
             total_stock: totalStock,
+            size_chart: sizeChart,
             variants,
         };
         setLoading(true);
@@ -318,6 +356,28 @@ const AddProducts = () => {
                 </div>
 
                 <aside className="space-y-4">
+                    <section className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div>
+                            <h2 className="text-sm font-bold text-[#1F0A3C]">Size Chart</h2>
+                            <p className="mt-1 text-xs text-gray-400">Upload a size guide image for customers.</p>
+                        </div>
+                        {sizeChart ? (
+                            <div className="group relative overflow-hidden rounded-lg border border-gray-200">
+                                <img src={imageUrl(sizeChart)} alt="Product size chart preview" className="max-h-56 w-full bg-gray-50 object-contain" />
+                                <button type="button" aria-label="Remove size chart" onClick={() => setSizeChart("")} className="absolute right-2 top-2 rounded-lg bg-white p-2 text-red-600 shadow-sm hover:bg-red-50">
+                                    <FiX size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className={`flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 px-4 text-center text-gray-400 transition hover:border-[#1F0A3C] ${uploadingSizeChart ? "pointer-events-none opacity-60" : ""}`}>
+                                <FiUploadCloud size={22} />
+                                <span className="mt-2 text-xs font-semibold text-gray-600">{uploadingSizeChart ? "Uploading size chart..." : "Click to upload size chart"}</span>
+                                <span className="mt-1 text-[10px]">JPG, PNG, WEBP, or GIF · max 5 MB</span>
+                                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" disabled={uploadingSizeChart} onChange={uploadSizeChart} />
+                            </label>
+                        )}
+                    </section>
+
                     <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
                         <div><h2 className="text-sm font-bold text-[#1F0A3C]">Color & Size Stock</h2><p className="text-xs text-gray-400">Total stock: {totalStock}</p></div>
                         <button type="button" aria-label="Add color" onClick={() => setVariants((current) => [...current, createVariant()])} className="rounded-lg bg-[#1F0A3C] p-2 text-white"><FiPlus /></button>

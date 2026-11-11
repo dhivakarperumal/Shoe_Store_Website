@@ -920,6 +920,13 @@ const ProductDetails = () => {
                       ))}
                       {!selectedVariant?.selectedSizes?.length && <span className="text-xs text-slate-500">Refer to the available size options above.</span>}
                     </div>
+                    {product.size_chart && (
+                      <img
+                        src={resolveImageUrl(product.size_chart)}
+                        alt={`${product.name} size chart`}
+                        className="mt-4 max-h-[360px] w-full border border-slate-200 object-contain"
+                      />
+                    )}
                   </>
                 )}
                 {activeInfoTab === "shipping" && (

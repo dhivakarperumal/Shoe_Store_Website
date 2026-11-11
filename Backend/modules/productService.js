@@ -101,8 +101,8 @@ function createProductService(pool) {
     async create(product) {
       const [result] = await pool.execute(
         `INSERT INTO products
-          (product_code, name, description, category, subcategory, brand, material, mrp, offer, offer_price, rating, total_stock, variants, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (product_code, name, description, category, subcategory, brand, material, mrp, offer, offer_price, rating, total_stock, variants, size_chart, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           product.product_code,
           product.name,
@@ -117,6 +117,7 @@ function createProductService(pool) {
           product.rating,
           product.total_stock,
           JSON.stringify(product.variants),
+          product.size_chart || null,
           product.status,
         ],
       );
@@ -132,7 +133,7 @@ function createProductService(pool) {
       await pool.execute(
         `UPDATE products SET
           product_code = ?, name = ?, description = ?, category = ?, subcategory = ?, brand = ?, material = ?,
-          mrp = ?, offer = ?, offer_price = ?, rating = ?, total_stock = ?, variants = ?, status = ?
+          mrp = ?, offer = ?, offer_price = ?, rating = ?, total_stock = ?, variants = ?, size_chart = ?, status = ?
          WHERE id = ?`,
         [
           value.product_code,
@@ -148,6 +149,7 @@ function createProductService(pool) {
           value.rating,
           value.total_stock,
           JSON.stringify(value.variants),
+          value.size_chart || null,
           value.status,
           id,
         ],
