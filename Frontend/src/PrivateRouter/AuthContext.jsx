@@ -11,8 +11,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
-    if (storedUser) {
+    if (storedUser && storedToken) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
@@ -20,9 +21,23 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
       }
+    } else {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
 
     setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    };
+
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+    return () => window.removeEventListener("auth:session-expired", handleSessionExpired);
   }, []);
 
   const login = (userData, token) => {

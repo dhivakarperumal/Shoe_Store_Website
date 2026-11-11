@@ -89,15 +89,22 @@ const Navbar = () => {
   // Fetch user orders count
   useEffect(() => {
     const fetchOrderCount = async () => {
-      if (user) {
-        try {
-          const response = await api.get("/orders");
-          // API returns a plain array when no pagination params are passed
-          const orders = Array.isArray(response.data) ? response.data : (response.data.data || []);
-          // Filter by user_id
-          const userOrders = orders.filter(o => (o.user_id === user.user_id || o.user_id === user.id) && o.status !== "Delivered");
-          setOrderCount(userOrders.length);
-        } catch (error) {
+      if (!user) {
+        setOrderCount(0);
+        return;
+      }
+
+      try {
+        const response = await api.get("/orders");
+        // API returns a plain array when no pagination params are passed
+        const orders = Array.isArray(response.data) ? response.data : (response.data.data || []);
+        // Filter by user_id
+        const userOrders = orders.filter(o => (o.user_id === user.user_id || o.user_id === user.id) && o.status !== "Delivered");
+        setOrderCount(userOrders.length);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          setOrderCount(0);
+        } else {
           console.error("Error fetching order count:", error);
         }
       }

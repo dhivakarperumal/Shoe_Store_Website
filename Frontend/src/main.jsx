@@ -16,6 +16,7 @@ const Home = React.lazy(() => import("./Components/Home/Home.jsx"));
 const AboutUs = React.lazy(() => import("./Components/About/AboutUs.jsx"));
 const ShopPage = React.lazy(() => import("./Components/Pages/AllProducts.jsx"));
 const ProductDetailsPage = React.lazy(() => import("./Components/Products/ProductDetails.jsx"));
+const CheckoutPage = React.lazy(() => import("./Components/Pages/Checkout.jsx"));
 
 const Login = React.lazy(() => import("./Components/Auth/Login.jsx"));
 const Register = React.lazy(() => import("./Components/Auth/Register.jsx"));
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
       { path: "about", element: <AboutUs /> },
       { path: "shop", element: <ShopPage /> },
       { path: "products/:id", element: <ProductDetailsPage /> },
+      { path: "checkout", element: <PrivateRoute><CheckoutPage /></PrivateRoute> },
 
     ],
   },

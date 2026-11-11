@@ -45,7 +45,10 @@ export const StoreProvider = ({ children }) => {
                 image: resolveStoredImage(item.image),
             })));
         } catch (err) {
-            console.error("Fetch cart error:", err);
+            if (err?.response?.status !== 404) {
+                console.error("Fetch cart error:", err);
+            }
+            setCart([]);
         } finally {
             setLoadingCart(false);
         }
@@ -59,7 +62,10 @@ export const StoreProvider = ({ children }) => {
             const res = await api.get(`/wishlist/${user.user_id}`);
             setWishlist(res.data);
         } catch (err) {
-            console.error("Fetch wishlist error:", err);
+            if (err?.response?.status !== 404) {
+                console.error("Fetch wishlist error:", err);
+            }
+            setWishlist([]);
         } finally {
             setLoadingWishlist(false);
         }

@@ -9,6 +9,7 @@ const { createAuthController } = require("./controllers/authController");
 const createAuthRouter = require("./routers/authRouter");
 const createBannerRouter = require("./routers/bannerRouter");
 const createCategoryRouter = require("./routers/categoryRouter");
+const createAddressRouter = require("./routers/addressRouter");
 const createCartRouter = require("./routers/cartRouter");
 const createWishlistRouter = require("./routers/wishlistRouter");
 const createProductRouter = require("./routers/productRouter");
@@ -41,6 +42,7 @@ app.get("/api/health", async (request, response) => {
 app.use("/api/auth", createAuthRouter(authController));
 app.use("/api/banners", createBannerRouter(pool));
 app.use("/api/categories", createCategoryRouter(pool));
+app.use("/api/addresses", createAddressRouter(pool));
 app.use("/api/cart", createCartRouter(pool));
 app.use("/api/wishlist", createWishlistRouter(pool));
 app.use("/api/products", createProductRouter(pool));

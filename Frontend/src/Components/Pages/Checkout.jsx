@@ -401,8 +401,14 @@ const Checkout = () => {
       navigate("/account?tab=orders");
 
     } catch (error) {
-      console.error(error);
-      alert("Order failed");
+      if (error.response?.status === 401) {
+        toast.error("Your session expired. Please sign in again.");
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      console.error("Order placement failed:", error);
+      toast.error(error.response?.data?.message || "Order failed. Please try again.");
     }
   };
 

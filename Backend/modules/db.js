@@ -364,6 +364,116 @@ async function initializeDatabase(pool) {
       INDEX orders_status_idx (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS addresses (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      customer_name VARCHAR(191) NOT NULL,
+      customer_email VARCHAR(191) DEFAULT NULL,
+      customer_phone VARCHAR(32) NOT NULL,
+      street_address VARCHAR(500) NOT NULL,
+      city VARCHAR(120) DEFAULT NULL,
+      district VARCHAR(120) DEFAULT NULL,
+      state VARCHAR(120) DEFAULT NULL,
+      country VARCHAR(120) DEFAULT NULL,
+      zip_code VARCHAR(20) DEFAULT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX addresses_user_idx (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      order_id BIGINT UNSIGNED NOT NULL,
+      product_id BIGINT UNSIGNED NOT NULL,
+      product_name VARCHAR(191) NOT NULL,
+      product_code VARCHAR(64) NOT NULL,
+      quantity INT UNSIGNED NOT NULL,
+      variant_color VARCHAR(120) DEFAULT NULL,
+      variant_size VARCHAR(64) DEFAULT NULL,
+      price DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      total DECIMAL(12, 2) NOT NULL DEFAULT 0,
+      image VARCHAR(2000) DEFAULT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX order_items_order_idx (order_id),
+      INDEX order_items_product_idx (product_id),
+      CONSTRAINT order_items_order_fk FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  const [legacyOrders] = await pool.query(`
+    SELECT orders.id, orders.items
+    FROM orders
+    LEFT JOIN order_items ON order_items.order_id = orders.id
+    WHERE order_items.id IS NULL
+  `);
+  for (const order of legacyOrders) {
+    let items = order.items;
+    if (typeof items === "string") {
+      try {
+        items = JSON.parse(items);
+      } catch {
+        items = [];
+      }
+    }
+    if (!Array.isArray(items)) continue;
+
+    for (const item of items) {
+      const productId = Number(item.product_id || item.id);
+      const quantity = Number(item.quantity);
+      if (!Number.isSafeInteger(productId) || productId < 1 ||
+          !Number.isSafeInteger(quantity) || quantity < 1) {
+        continue;
+      }
+      const price = Number(item.price) || 0;
+      await pool.execute(
+        `INSERT INTO order_items
+          (order_id, product_id, product_name, product_code, quantity, variant_color, variant_size, price, total, image)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          order.id,
+          productId,
+          String(item.product_name || item.name || "Product").slice(0, 191),
+          String(item.product_code || "").slice(0, 64),
+          quantity,
+          typeof item.variant_color === "string" ? item.variant_color.slice(0, 120) : null,
+          typeof item.variant_size === "string" ? item.variant_size.slice(0, 64) : null,
+          price,
+          Number(item.total ?? price * quantity) || 0,
+          typeof item.image === "string" ? item.image.slice(0, 2000) : null,
+        ],
+      );
+    }
+  }
+
+  await pool.query(`
+    INSERT INTO addresses
+      (user_id, customer_name, customer_email, customer_phone, street_address, city, district, state, country, zip_code)
+    SELECT DISTINCT
+      orders.user_id, orders.customer_name, orders.customer_email, orders.customer_phone,
+      orders.street_address, orders.city, orders.district, orders.state, orders.country, orders.zip_code
+    FROM orders
+    WHERE orders.user_id IS NOT NULL
+      AND orders.street_address IS NOT NULL
+      AND orders.street_address <> ''
+      AND NOT EXISTS (
+        SELECT 1
+        FROM addresses
+        WHERE addresses.user_id = orders.user_id
+          AND addresses.customer_name <=> orders.customer_name
+          AND addresses.customer_email <=> orders.customer_email
+          AND addresses.customer_phone <=> orders.customer_phone
+          AND addresses.street_address <=> orders.street_address
+          AND addresses.city <=> orders.city
+          AND addresses.district <=> orders.district
+          AND addresses.state <=> orders.state
+          AND addresses.country <=> orders.country
+          AND addresses.zip_code <=> orders.zip_code
+      )
+  `);
 }
 
 module.exports = { createPool, initializeDatabase };
